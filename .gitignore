@@ -1,0 +1,6 @@
+# ignore vim's swap files
+**/*.sw[po]
+
+# ignore compiled files
+**/*.[ao]
+chue
