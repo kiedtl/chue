@@ -1,13 +1,13 @@
 #
 # chue: a cat(1) for colors
 #
-# (c) Kiëd Llaentenn and contributors
-# See the LICENSE.md file for more information
+# (c) Kiëd Llaentenn
+# See the COPYING file for more information
 #
 
 include config.mk
 
-VERSION = \"1.0.0\"
+VERSION = \"0.1.0\"
 
 BIN     = chue
 SRC     = main.c
