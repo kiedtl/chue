@@ -32,11 +32,11 @@ ccm_list_get_head(struct CCMList *list)
 	if (list == NULL) return NULL;
 	if (list->prev == NULL) return list;
 
-	struct CCMList *head, ctr;
+	struct CCMList *head, *ctr;
 	ctr = list->prev;
-	while (cur != NULL) {
-		head = cur;
-		cur = cur->prev;
+	while (ctr != NULL) {
+		head = ctr;
+		ctr = ctr->prev;
 	}
 
 	return head;
@@ -57,11 +57,11 @@ ccm_list_get_tail(struct CCMList *list)
 	if (list == NULL) return NULL;
 	if (list->next == NULL) return list;
 
-	struct CCMList *tail, ctr;
+	struct CCMList *tail, *ctr;
 	ctr = list->next;
-	while (cur != NULL) {
-		tail = cur;
-		cur = cur->next;
+	while (ctr != NULL) {
+		tail = ctr;
+		ctr = ctr->next;
 	}
 
 	return tail;
@@ -85,8 +85,8 @@ ccm_list_push(struct CCMList *list, void *data)
 	struct CCMList *new = calloc(1, sizeof(struct CCMList));
 	if (new == NULL) return FALSE;
 
-	head->next = new;
-	new->prev = head;
+	tail->next = new;
+	new->prev = tail;
 	new->data = data;
 
 	return TRUE;
