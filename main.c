@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "lex.h"
 #include "list.h"
 #include "read.h"
 #include "types.h"
@@ -27,7 +28,12 @@ main(int argc, char **argv)
 		// TODO: move read_to_end's buf allocation to here
 		u8 *buf = NULL;
 		usize read = read_to_end(c->data, &buf); // TODO: handle err
-		write(STDOUT_FILENO, buf, read);
+		struct CCMList *tokens = lex(buf, read); // TODO: handle err
+		for (struct CCMList *t = tokens->next;
+			t != NULL; t = t->next) {
+			printf("token: %s\n", (char*) t->data);
+		}
+		//write(STDOUT_FILENO, buf, read);
 		free(buf);
 	}
 
