@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 #include "color.h"
+#include "display.h"
 #include "lex.h"
 #include "list.h"
 #include "read.h"
@@ -32,14 +33,7 @@ main(int argc, char **argv)
 		usize read = read_to_end(c->data, &buf); // TODO: handle err
 		struct CCMList *tokens = lex(buf, read); // TODO: handle err
 		struct CCMList *colors = parse(tokens);  // TODO: handle err
-		for (struct CCMList *t = colors->next;
-			t != NULL; t = t->next) {
-			printf("color: r=%i, g=%i, b=%i\n",
-				((struct Color*) t->data)->red,
-				((struct Color*) t->data)->green,
-				((struct Color*) t->data)->blue);
-		}
-		//write(STDOUT_FILENO, buf, read);
+		display(colors);
 		free(buf);
 	}
 
