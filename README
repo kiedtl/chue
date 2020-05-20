@@ -1,0 +1,11 @@
+# chue
+
+a cat(1) for colors.
+
+---
+
+This project is mostly intended to test out some of my ideas:
+
+- linked list and vector implementation.
+- error handling with sum types (e.g. Rust's `Result<T>`)
+- a non-null-terminated string.
