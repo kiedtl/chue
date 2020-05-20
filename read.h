@@ -1,6 +1,7 @@
 #ifndef READ_H
 #define READ_H
 
-char *read_to_end(char *path);
+#include "types.h"
+usize read_to_end(char *path, u8 **buf);
 
 #endif

@@ -1,31 +1,42 @@
-char *
-read_to_end(char *path)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include "read.h"
+#include "types.h"
+
+usize
+read_to_end(char *path, u8 **buf)
 {
-	usize sz = 4096;
-	char *data = malloc(sz * sizeof(char));
-	if (data == NULL) return NULL;
-
-	/* cpy file data onto buffer */
-	FILE *f;
+	isize fd;
 	if (!strcmp(path, "-")) {
-		f = stdin;
+		fd = STDIN_FILENO;
 	} else {
-		if ((f = fopen(path, "r")) == NULL)
-			return NULL;
+		if ((fd = open(path, O_RDONLY)) < 0)
+			return 0;
 	}
 
+	usize bufsz = 4096;
+	*buf = (u8*) malloc(bufsz * sizeof(u8));
+	if (*buf == NULL) return 0;
+
+        char tmpbuf[bufsz];
+        isize n = 0;
 	usize i = 0;
-	for (int c = 0; (c = fgetc(f)) != EOF; ++i) {
-		/* check if buffer is big enough
-		 * for data (including null terminator!!) */
-		if ((i + 1) >= sz)
-			data = realloc(data, (sz *= 2));
 
-		data[i] = c;
-	}
+        while ((n = read(fd, tmpbuf, sizeof(tmpbuf))) > 0) {
+		memcpy(&((*buf)[i]), tmpbuf, n);
 
-	data[i + 1] = '\0';
+		i += n;
+		if (i >= bufsz)
+			*buf = (u8*) realloc(*buf, (bufsz *= 2));
+        }
 
-	if (f != stdin) fclose(f);
-	return data;
+	if (fd != STDIN_FILENO) close(fd);
+	return i;
 }
