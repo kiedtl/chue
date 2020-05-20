@@ -10,20 +10,21 @@ include config.mk
 VERSION = \"0.1.0\"
 
 BIN     = chue
-SRC     = main.c
+SRC     = main.c list.c read.c
 OBJ     = $(SRC:.c=.o)
 
 WARNING = -Wall -Wpedantic -Wextra -Wold-style-definition \
 	  -Wmissing-prototypes -Wfloat-equal -Wstrict-prototypes \
 	  -Wredundant-decls -Wendif-labels -Wstrict-aliasing=2 -Woverflow \
 	  -Wformat=2 -Wmissing-include-dirs -Wno-trigraphs -Winit-self
-INC     = -I. -Isub/ccommon/include/
+INC     = -I. -Iccommon/include/
 DEF     =
 
 CFLAGS  = -std=c99 -DVERSION=$(VERSION) -D_DEFAULT_SOURCE $(WARNING) $(INC)
 LDFLAGS = -fuse-ld=$(LD)
 
-all: man/$(BIN).1 debug
+all: debug
+#all: man/$(BIN).1 debug
 
 .c.o:
 	@printf "    %-8s%s\n" "CC" $@
