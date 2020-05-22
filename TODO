@@ -1,0 +1,11 @@
+TODO
+
+- display
+	- oldrgb
+	- hsl/hsv
+	- flags to disable/enable these
+- parser
+	- ability to parse comon colors (e.g. "red", "blue", etc)
+- libraries
+	- design/implement/use result
+	- implement vectors and use as strings
