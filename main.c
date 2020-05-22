@@ -28,7 +28,6 @@ main(int argc, char **argv)
 
 	/* foreach path, read, lex, parse, and display */
 	for (struct CCMList *c = paths->next; c != NULL; c = c->next) {
-		// TODO: move read_to_end's buf allocation to here
 		u8 *buf = NULL;
 		usize read = read_to_end(c->data, &buf); // TODO: handle err
 		struct CCMList *tokens = lex(buf, read); // TODO: handle err
