@@ -12,10 +12,10 @@
 static struct Color *try_parse_oldrgb(char *token);
 static struct Color *try_parse_hexrgb(char *token);
 
-struct CCMList *
-parse(struct CCMList *tokens)
+struct ccm_list *
+parse(struct ccm_list *tokens)
 {
-	struct CCMList *colors = ccm_list_create(); // TODO: err handling
+	struct ccm_list *colors = ccm_list_create(); // TODO: err handling
 
 	/* this is not easy. we need to support the
 	 * following formats:
@@ -37,7 +37,7 @@ parse(struct CCMList *tokens)
 	 * :'(
 	 */
 
-	for (struct CCMList *c = tokens->next; c != NULL; c = c->next) {
+	for (struct ccm_list *c = tokens->next; c != NULL; c = c->next) {
 		struct Color *color;
 
 		/* try parsing in all formats,

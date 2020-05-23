@@ -7,10 +7,10 @@
 #include "list.h"
 #include "types.h"
 
-struct CCMList *
+struct ccm_list *
 lex(u8 *data, usize sz)
 {
-	struct CCMList *tokens = ccm_list_create(); //TODO: handle errs
+	struct ccm_list *tokens = ccm_list_create(); //TODO: handle errs
 
 	/* lastpos holds the starting index of tokens */
 	usize lastpos = 0;

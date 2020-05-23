@@ -3,19 +3,18 @@
 
 #include "types.h"
 
-struct CCMList {
+struct ccm_list {
 	void *data;
-	struct CCMList *prev, *next;
+	struct ccm_list *next;
+	struct ccm_list *prev;
 };
 
-typedef struct List ccm_list_t;
-
 /* prototypes */
-struct CCMList *ccm_list_create(void);
-struct CCMList *ccm_list_get_head(struct CCMList *list);
-struct CCMList *ccm_list_get_tail(struct CCMList *list);
-isize           ccm_list_push(struct CCMList *list, void *data);
-void           *ccm_list_pop(struct CCMList *list);
-isize           ccm_list_length(struct CCMList *list);
+struct ccm_list *ccm_list_create(void);
+struct ccm_list *ccm_list_get_head(struct ccm_list *list);
+struct ccm_list *ccm_list_get_tail(struct ccm_list *list);
+isize ccm_list_push(struct ccm_list *list, void *data);
+void *ccm_list_pop(struct ccm_list *list);
+isize ccm_list_length(struct ccm_list *list);
 
 #endif

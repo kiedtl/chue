@@ -10,10 +10,10 @@
  * returns list on success, NULL on calloc failure.
  * on calloc failure, errno should be set.
  */
-struct CCMList *
+struct ccm_list *
 ccm_list_create(void)
 {
-	struct CCMList *new = calloc(1, sizeof(struct CCMList));
+	struct ccm_list *new = calloc(1, sizeof(struct ccm_list));
 	return new;
 }
 
@@ -26,13 +26,13 @@ ccm_list_create(void)
  *     1) list->prev is null
  * otherwise returns first node.
  */
-struct CCMList *
-ccm_list_get_head(struct CCMList *list)
+struct ccm_list *
+ccm_list_get_head(struct ccm_list *list)
 {
 	if (list == NULL) return NULL;
 	if (list->prev == NULL) return list;
 
-	struct CCMList *head, *ctr;
+	struct ccm_list *head, *ctr;
 	ctr = list->prev;
 	while (ctr != NULL) {
 		head = ctr;
@@ -51,13 +51,13 @@ ccm_list_get_head(struct CCMList *list)
  *     1) list->next is null
  * otherwise returns last node.
  */
-struct CCMList *
-ccm_list_get_tail(struct CCMList *list)
+struct ccm_list *
+ccm_list_get_tail(struct ccm_list *list)
 {
 	if (list == NULL) return NULL;
 	if (list->next == NULL) return list;
 
-	struct CCMList *tail, *ctr;
+	struct ccm_list *tail, *ctr;
 	ctr = list->next;
 	while (ctr != NULL) {
 		tail = ctr;
@@ -77,12 +77,12 @@ ccm_list_get_tail(struct CCMList *list)
  * else returns true.
  */
 isize
-ccm_list_push(struct CCMList *list, void *data)
+ccm_list_push(struct ccm_list *list, void *data)
 {
 	if (list == NULL) return FALSE;
-	struct CCMList *tail = ccm_list_get_tail(list);
+	struct ccm_list *tail = ccm_list_get_tail(list);
 
-	struct CCMList *new = calloc(1, sizeof(struct CCMList));
+	struct ccm_list *new = calloc(1, sizeof(struct ccm_list));
 	if (new == NULL) return FALSE;
 
 	tail->next = new;
@@ -100,10 +100,10 @@ ccm_list_push(struct CCMList *list, void *data)
  *     2) data is null
  */
 void *
-ccm_list_pop(struct CCMList *list)
+ccm_list_pop(struct ccm_list *list)
 {
 	if (list == NULL) return NULL;
-	struct CCMList *tail = ccm_list_get_tail(list);
+	struct ccm_list *tail = ccm_list_get_tail(list);
 
 	/* unlink */
 	tail->prev->next = NULL;
@@ -122,15 +122,15 @@ ccm_list_pop(struct CCMList *list)
  * in which case -1 is returned.
  */
 isize
-ccm_list_length(struct CCMList *list)
+ccm_list_length(struct ccm_list *list)
 {
 	if (list == NULL) return -1;
 
 	/* rewind */
-	struct CCMList *head = ccm_list_get_head(list);
+	struct ccm_list *head = ccm_list_get_head(list);
 
 	usize len = 0;
-	for (struct CCMList *c = head->next; c != NULL; c = c->next)
+	for (struct ccm_list *c = head->next; c != NULL; c = c->next)
 		++len;
 
 	return len;

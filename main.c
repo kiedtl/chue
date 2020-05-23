@@ -56,7 +56,7 @@ main(int argc, char **argv)
 		}
 	}
 
-	struct CCMList *paths = ccm_list_create(); // TODO: err checking
+	struct ccm_list *paths = ccm_list_create(); // TODO: err checking
 
 	if (optind >= argc) {
 		/* just push stdin if no paths provided */
@@ -67,11 +67,11 @@ main(int argc, char **argv)
 	}
 
 	/* foreach path, read, lex, parse, and display */
-	for (struct CCMList *c = paths->next; c != NULL; c = c->next) {
+	for (struct ccm_list *c = paths->next; c != NULL; c = c->next) {
 		u8 *buf = NULL;
 		usize read = read_to_end(c->data, &buf); // TODO: handle err
-		struct CCMList *tokens = lex(buf, read); // TODO: handle err
-		struct CCMList *colors = parse(tokens);  // TODO: handle err
+		struct ccm_list *tokens = lex(buf, read); // TODO: handle err
+		struct ccm_list *colors = parse(tokens);  // TODO: handle err
 		display(colors);
 		free(buf);
 	}

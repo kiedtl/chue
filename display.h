@@ -3,6 +3,6 @@
 
 #include "list.h"
 
-void display(struct CCMList *colors);
+void display(struct ccm_list *colors);
 
 #endif

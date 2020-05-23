@@ -4,6 +4,6 @@
 #include "types.h"
 #include "list.h"
 
-struct CCMList *lex(u8 *data, usize sz);
+struct ccm_list *lex(u8 *data, usize sz);
 
 #endif

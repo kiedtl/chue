@@ -3,6 +3,6 @@
 
 #include "list.h"
 
-struct CCMList *parse(struct CCMList *tokens);
+struct ccm_list *parse(struct ccm_list *tokens);
 
 #endif
