@@ -56,7 +56,7 @@ main(int argc, char **argv)
 		}
 	}
 
-	struct ccm_list *paths = ccm_list_create(); // TODO: err checking
+	struct ccm_list *paths = UNWRAP(ccm_list_create());
 
 	if (optind >= argc) {
 		/* just push stdin if no paths provided */

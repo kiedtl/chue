@@ -3,34 +3,34 @@
 #include "bool.h"
 #include "list.h"
 #include "types.h"
+#include "result.h"
+
+#define ALLOC_ERR "Allocation failure"
+#define NULL_ERR  "Unexpected null value"
 
 /*
  * allocate list head
- *
- * returns list on success, NULL on calloc failure.
- * on calloc failure, errno should be set.
  */
-struct ccm_list *
+struct ccm_result *
 ccm_list_create(void)
 {
 	struct ccm_list *new = calloc(1, sizeof(struct ccm_list));
-	return new;
+	if (new == NULL) return RESULT_ERR(ALLOC_ERR);
+	return RESULT_OK(new);
 }
 
 /*
  * get first node (head) of list.
  *
- * returns null if
- *     1) list is null
- * returns list if
- *     1) list->prev is null
- * otherwise returns first node.
+ * returns list if it points to list head.
  */
-struct ccm_list *
+struct ccm_result *
 ccm_list_get_head(struct ccm_list *list)
 {
-	if (list == NULL) return NULL;
-	if (list->prev == NULL) return list;
+	if (list == NULL)
+		return RESULT_ERR(NULL_ERR);
+	if (list->prev == NULL)
+		return RESULT_OK(list);
 
 	struct ccm_list *head, *ctr;
 	ctr = list->prev;
@@ -39,23 +39,21 @@ ccm_list_get_head(struct ccm_list *list)
 		ctr = ctr->prev;
 	}
 
-	return head;
+	return RESULT_OK(head);
 }
 
 /*
  * get last node of list.
  *
- * returns null if
- *     1) list is null
- * returns list if
- *     1) list->next is null
- * otherwise returns last node.
+ * returns list if list->next is null
  */
-struct ccm_list *
+struct ccm_result *
 ccm_list_get_tail(struct ccm_list *list)
 {
-	if (list == NULL) return NULL;
-	if (list->next == NULL) return list;
+	if (list == NULL)
+		return RESULT_ERR(NULL_ERR);
+	if (list->next == NULL)
+		return RESULT_OK(list);
 
 	struct ccm_list *tail, *ctr;
 	ctr = list->next;
@@ -64,7 +62,7 @@ ccm_list_get_tail(struct ccm_list *list)
 		ctr = ctr->next;
 	}
 
-	return tail;
+	return RESULT_OK(tail);
 }
 
 /*
@@ -76,11 +74,11 @@ ccm_list_get_tail(struct ccm_list *list)
  *
  * else returns true.
  */
-isize
+bool
 ccm_list_push(struct ccm_list *list, void *data)
 {
 	if (list == NULL) return FALSE;
-	struct ccm_list *tail = ccm_list_get_tail(list);
+	struct ccm_list *tail = UNWRAP(ccm_list_get_tail(list));
 
 	struct ccm_list *new = calloc(1, sizeof(struct ccm_list));
 	if (new == NULL) return FALSE;
@@ -96,42 +94,41 @@ ccm_list_push(struct ccm_list *list, void *data)
  * pop the last item off list and return it's data.
  *
  * returns NULL if
- *     1) list is null
- *     2) data is null
+ *     1) data is null
  */
-void *
+struct ccm_result *
 ccm_list_pop(struct ccm_list *list)
 {
-	if (list == NULL) return NULL;
-	struct ccm_list *tail = ccm_list_get_tail(list);
+	if (list == NULL)
+		return RESULT_ERR(ALLOC_ERR);
+
+	struct ccm_list *tail = UNWRAP(ccm_list_get_tail(list));
 
 	/* unlink */
 	tail->prev->next = NULL;
 	tail->prev = NULL;
-
 	void *data = tail->data;
-	if (tail) free(tail);
-	return data;
+	free(tail);
+
+	return RESULT_OK(data);
 }
 
 /*
  * get length of list, not
  * counting head node.
- *
- * returns length, unless list is null,
- * in which case -1 is returned.
  */
-isize
+struct ccm_result *
 ccm_list_length(struct ccm_list *list)
 {
-	if (list == NULL) return -1;
+	if (list == NULL)
+		return RESULT_ERR(ALLOC_ERR);
 
 	/* rewind */
-	struct ccm_list *head = ccm_list_get_head(list);
+	struct ccm_list *head = UNWRAP(ccm_list_get_head(list));
 
 	usize len = 0;
 	for (struct ccm_list *c = head->next; c != NULL; c = c->next)
 		++len;
 
-	return len;
+	return RESULT_OK(&len);
 }
