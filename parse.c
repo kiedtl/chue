@@ -8,14 +8,14 @@
 #include "list.h"
 #include "parse.h"
 #include "types.h"
+#include "result.h"
 
-static struct Color *try_parse_oldrgb(char *token);
 static struct Color *try_parse_hexrgb(char *token);
 
 struct ccm_list *
 parse(struct ccm_list *tokens)
 {
-	struct ccm_list *colors = ccm_list_create(); // TODO: err handling
+	struct ccm_list *colors = UNWRAP(ccm_list_create());
 
 	/* this is not easy. we need to support the
 	 * following formats:
@@ -38,55 +38,11 @@ parse(struct ccm_list *tokens)
 	 */
 
 	for (struct ccm_list *c = tokens->next; c != NULL; c = c->next) {
-		struct Color *color;
-
-		/* try parsing in all formats,
-		 * if they all fail then throw an error */
-
-		/* note: the order in which formats are tried
-		 * really does matter. Here be dragons! */
-
-		if (
-			(color = try_parse_oldrgb(c->data)) == NULL &&
-			(color = try_parse_hexrgb(c->data)) == NULL
-		) {
-			fprintf(stderr, "chue: warning: "
-				"ignoring malformed color: '%s'\n",
-				(char*) c->data);
-		} else {
-			ccm_list_push(colors, color);
-		}
+		struct Color *color = try_parse_hexrgb(c->data);
+		UNWRAP(ccm_list_push(colors, color));
 	}
 
 	return colors;
-}
-
-static struct Color *
-try_parse_oldrgb(char *token) /* RRR,GGG,BBB */
-{
-	usize len = strlen(token);
-
-	/* if token doesn't contain commas
-	 * then it's not in this format */
-	bool hascomma = FALSE;
-	for (usize i = 0; i < len; ++i) {
-		if (token[i] == ',') {
-			hascomma = TRUE;
-			break;
-		}
-	}
-
-	if (!hascomma) return NULL;
-
-	struct Color *rgb = calloc(1, sizeof(struct Color));
-	rgb->red = rgb->green = rgb->blue = 0;
-
-	char *eptr = token;
-	rgb->red   = strtol(token, &eptr, 10); token = eptr + 1;
-	rgb->green = strtol(token, &eptr, 10); token = eptr + 1;
-	rgb->blue  = strtol(token, &eptr, 10);
-
-	return rgb;
 }
 
 static struct Color *

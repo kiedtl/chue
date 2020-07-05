@@ -60,10 +60,10 @@ main(int argc, char **argv)
 
 	if (optind >= argc) {
 		/* just push stdin if no paths provided */
-		ccm_list_push(paths, (void*) "-"); // TODO: err checking
+		UNWRAP(ccm_list_push(paths, (void*) "-"));
 	} else {
 		while (optind < argc)
-			ccm_list_push(paths, (void*) argv[++optind]); // TODO: err checking
+			UNWRAP(ccm_list_push(paths, (void*) argv[++optind]));
 	}
 
 	/* foreach path, read, lex, parse, and display */
@@ -74,7 +74,10 @@ main(int argc, char **argv)
 		struct ccm_list *colors = parse(tokens);  // TODO: handle err
 		display(colors);
 		free(buf);
+		UNWRAP(ccm_list_destroy(tokens));
+		UNWRAP(ccm_list_destroy(colors));
 	}
 
+	UNWRAP(ccm_list_destroy(paths));
 	return 0;
 }

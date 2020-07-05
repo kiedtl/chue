@@ -1,6 +1,5 @@
 #include <stdlib.h>
 
-#include "bool.h"
 #include "list.h"
 #include "types.h"
 #include "result.h"
@@ -16,6 +15,9 @@ ccm_list_create(void)
 {
 	struct ccm_list *new = calloc(1, sizeof(struct ccm_list));
 	if (new == NULL) return RESULT_ERR(ALLOC_ERR);
+
+	new->prev = new->next = new->data = NULL;
+
 	return RESULT_OK(new);
 }
 
@@ -67,31 +69,27 @@ ccm_list_get_tail(struct ccm_list *list)
 
 /*
  * push item onto list.
- *
- * return false if
- *   1) list is null
- *   2) allocation failed
- *
- * else returns true.
  */
-bool
+struct ccm_result *
 ccm_list_push(struct ccm_list *list, void *data)
 {
-	if (list == NULL) return FALSE;
+	if (list == NULL) 
+		return RESULT_ERR(NULL_ERR);
+
 	struct ccm_list *tail = UNWRAP(ccm_list_get_tail(list));
 
 	struct ccm_list *new = calloc(1, sizeof(struct ccm_list));
-	if (new == NULL) return FALSE;
+	if (new == NULL) return RESULT_ERR(ALLOC_ERR);
 
 	tail->next = new;
 	new->prev = tail;
 	new->data = data;
 
-	return TRUE;
+	return RESULT_OK(NULL);
 }
 
 /*
- * pop the last item off list and return it's data.
+ * pop the last item off list and return its data.
  *
  * returns NULL if
  *     1) data is null
@@ -121,7 +119,7 @@ struct ccm_result *
 ccm_list_length(struct ccm_list *list)
 {
 	if (list == NULL)
-		return RESULT_ERR(ALLOC_ERR);
+		return RESULT_ERR(NULL_ERR);
 
 	/* rewind */
 	struct ccm_list *head = UNWRAP(ccm_list_get_head(list));
@@ -131,4 +129,28 @@ ccm_list_length(struct ccm_list *list)
 		++len;
 
 	return RESULT_OK(&len);
+}
+
+/*
+ * free list and data
+ */
+struct ccm_result *
+ccm_list_destroy(struct ccm_list *list)
+{
+	if (list == NULL)
+		return RESULT_ERR(NULL_ERR);
+
+	/* rewind */
+	struct ccm_list *head = UNWRAP(ccm_list_get_head(list));
+
+	struct ccm_list *c;
+	for (c = head->next; c != NULL; c = c->next) {
+		if (c->prev) {
+			if (c->prev->data)
+				free(c->prev->data);
+			free(c->prev);
+		}
+	}
+
+	return RESULT_OK(NULL);
 }

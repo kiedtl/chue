@@ -16,4 +16,4 @@ LD = gold
 RELEASE_CFLAGS  = -Os
 RELEASE_LDFLAGS = -march=native -flto -s
 DEBUG_CFLAGS    = -O0 -ggdb
-DEBUG_LDFLAGS   =
+DEBUG_LDFLAGS   = -fsanitize=address

@@ -21,12 +21,14 @@ struct ccm_result {
 #define UNWRAP(R) __ccm_result_unwrap((R), #R, __FILE__, __LINE__, __func__);
 
 /* return OK in Result with Error null */
-#define RESULT_OK(V)  &((struct ccm_result) { .is_ok = TRUE, .result  = (void*) V });
+#define RESULT_OK(V)  __ccm_result_ok(V);
 
 /* return Error in Result with value null */
-#define RESULT_ERR(E) &((struct ccm_result) { .is_ok = FALSE, .errmsg = (char*) E });
+#define RESULT_ERR(E) __ccm_result_err(E);
 
-/* prototype */
+/* prototypes */
+struct ccm_result *__ccm_result_ok(void *val);
+struct ccm_result *__ccm_result_err(char *errs);
 void *__ccm_result_unwrap(
 	struct ccm_result *r,
 	char *expr,

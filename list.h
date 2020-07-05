@@ -14,8 +14,9 @@ struct ccm_list {
 struct ccm_result *ccm_list_create(void);
 struct ccm_result *ccm_list_get_head(struct ccm_list *list);
 struct ccm_result *ccm_list_get_tail(struct ccm_list *list);
-bool ccm_list_push(struct ccm_list *list, void *data);
+struct ccm_result *ccm_list_push(struct ccm_list *list, void *data);
 struct ccm_result *ccm_list_pop(struct ccm_list *list);
 struct ccm_result *ccm_list_length(struct ccm_list *list);
+struct ccm_result *ccm_list_destroy(struct ccm_list *list);
 
 #endif
