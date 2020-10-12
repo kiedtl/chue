@@ -19,14 +19,13 @@ parse(struct ccm_list *tokens)
 
 	/* this is not easy. we need to support the
 	 * following formats:
-	 *     1) #RGBA
-	 *     2) #RRGGBBAA
-	 *     3) #RRRRGGGGBBBBAA
-	 *     4) RRR,GGG,BBB,AAA
-	 *     5) blue, green, red, etc
-	 *     6) oh, and the #RGB* variants
-	 *        must not require a
-	 *        hashbang
+	 *     1) blue, green, red, etc
+	 *     2) #RGBA
+	 *     3) #RRGGBBAA
+	 *     4) #RRRRGGGGBBBBAA
+	 *     5) RRR,GGG,BBB,AAA
+	 *     6) oh, and the #RGB* variants must not require a hashbang
+	 *     7) not to mention the HS(L|V) stuff
 	 *
 	 * thank goodness we're not going to
 	 * support HS(L|V)
@@ -39,7 +38,10 @@ parse(struct ccm_list *tokens)
 
 	for (struct ccm_list *c = tokens->next; c != NULL; c = c->next) {
 		struct Color *color = try_parse_hexrgb(c->data);
-		UNWRAP(ccm_list_push(colors, color));
+
+		if (color != NULL) {
+			UNWRAP(ccm_list_push(colors, color));
+		}
 	}
 
 	return colors;

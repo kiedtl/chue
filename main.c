@@ -50,9 +50,6 @@ main(int argc, char **argv)
 			printf("chue v%s\n", VERSION);
 			return 0;
 			break;
-		default:
-			die("chue: error: invalid argument.");
-			break;
 		}
 	}
 
