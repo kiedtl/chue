@@ -48,21 +48,29 @@ parse(struct ccm_list *tokens)
 }
 
 static struct Color *
-try_parse_hexrgb(char *token) /* [#]R[RRR]G[GGG]B[BBB]A[AAA] */
+try_parse_hexrgb(char *token) /* #R[R]G[G]B[B] */
 {
 	while (isspace(*token)) ++token;
 	if (*token == '#') ++token;
-
-	/* TODO: allow numbers of format other than #RRGGBB */
-	if (strlen(token) != 6) return NULL;
 
 	struct Color *rgb = calloc(1, sizeof(struct Color));
 	rgb->red = rgb->green = rgb->blue = 0;
 
 	usize hex  = (usize) strtol(token, NULL, 16);
-	rgb->red   = (hex >> 16) & 0xFF;
-	rgb->green = (hex >>  8) & 0xFF;
-	rgb->blue  = (hex      ) & 0xFF;
+
+	if (strlen(token) == 3) {
+		rgb->red   = ((hex >> 8) & 0xF) << 4 | ((hex >> 8) & 0xF);
+		rgb->green = ((hex >> 4) & 0xF) << 4 | ((hex >> 4) & 0xF);
+		rgb->blue  = ((hex >> 0) & 0xF) << 4 | ((hex >> 0) & 0xF);
+	} else if (strlen(token) == 6) {
+		rgb->red   = (hex >> 16) & 0xFF;
+		rgb->green = (hex >>  8) & 0xFF;
+		rgb->blue  = (hex)       & 0xFF;
+	} else {
+		/* unexpected token size, unexpected format */
+		free(rgb);
+		return NULL;
+	}
 
 	return rgb;
 }
