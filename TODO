@@ -6,7 +6,7 @@ TODO
 	- flags to disable/enable these
 - parser
 	- ability to parse comon colors (e.g. "red", "blue", etc)
-	- ability to parse hsv/hsl
+	- fix ability to parse hsv/hsl
 - libraries
 	- design/implement/use result
 	- implement vectors and use as strings

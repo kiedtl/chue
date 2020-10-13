@@ -11,6 +11,7 @@
 #include "result.h"
 
 static struct Color *try_parse_hsvhsl(char *token);
+static struct Color *try_parse_decrgb(char *token);
 static struct Color *try_parse_hexrgb(char *token);
 
 struct ccm_list *
@@ -30,6 +31,7 @@ parse(struct ccm_list *tokens)
 		struct Color *color;
 
 		if ((color = try_parse_hexrgb(c->data)) == NULL &&
+			(color = try_parse_decrgb(c->data)) == NULL &&
 			(color = try_parse_hsvhsl(c->data)) == NULL) {
 		} else {
 			UNWRAP(ccm_list_push(colors, color));
@@ -72,6 +74,36 @@ try_parse_hsvhsl(char *token) /* hsv(H, S, V) */
 		return color_from_hsv(vals[0], vals[1], vals[2]);
 	else
 		return color_from_hsl(vals[0], vals[1], vals[2]);
+}
+
+static struct Color *
+try_parse_decrgb(char *token) /* RRR,GGG,BBB */
+{
+	if (token[0] < '0' || token[0] > '9') {
+		return NULL;
+	}
+
+	/* we only need 3 values, the last is ignored */
+	u8 vals[3];
+	usize ctr;
+
+	for (ctr = 0; ctr < 3; ++ctr) {
+		char *val = strsep(&token, ",");
+		if (val[0] < '0' || val[0] > '9')
+			return NULL;
+		vals[ctr] = strtol(val, NULL, 10);
+	}
+
+	if (ctr < 2) {
+		/* not enough fields */
+		return NULL;
+	}
+
+	struct Color *rgb = calloc(1, sizeof(struct Color));
+	rgb->r = vals[0];
+	rgb->g = vals[1];
+	rgb->b = vals[2];
+	return rgb;
 }
 
 static struct Color *
