@@ -21,7 +21,9 @@ WARNING = -Wall -Wextra -Wold-style-definition \
 INC     = -I. -Iccommon/include/
 DEF     =
 
-CFLAGS  = -std=c99 -DVERSION=$(VERSION) -D_DEFAULT_SOURCE $(WARNING) $(INC)
+CFLAGS  = -std=c99 -DVERSION=$(VERSION) -D_DEFAULT_SOURCE \
+	  -Og -ggdb \
+	  $(WARNING) $(INC)
 LDFLAGS = -lm -fuse-ld=$(LD)
 
 all: debug

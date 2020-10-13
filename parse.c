@@ -10,9 +10,9 @@
 #include "types.h"
 #include "result.h"
 
-static struct Color *try_parse_hsvhsl(char *token);
-static struct Color *try_parse_decrgb(char *token);
-static struct Color *try_parse_hexrgb(char *token);
+static struct RGB *try_parse_hsvhsl(char *token);
+static struct RGB *try_parse_decrgb(char *token);
+static struct RGB *try_parse_hexrgb(char *token);
 
 struct ccm_list *
 parse(struct ccm_list *tokens)
@@ -20,15 +20,14 @@ parse(struct ccm_list *tokens)
 	struct ccm_list *colors = UNWRAP(ccm_list_create());
 
 	/* we need to support the following formats:
-	 *     1) blue, green, red, magenta, &c
-	 *     2) #RGB and #RRGGBB
-	 *     5) RRR,GGG,BBB
-	 *     6) the #RGB* variants must not require a pound
-	 *     7) not to mention the HS(L|V) stuff
+	 *     1) #RGB and #RRGGBB
+	 *     2) RRR,GGG,BBB
+	 *     3) the #RGB* variants must not require a pound
+	 *     4) not to mention the HS(L|V) stuff
 	 */
 
 	for (struct ccm_list *c = tokens->next; c != NULL; c = c->next) {
-		struct Color *color;
+		struct RGB *color;
 
 		if ((color = try_parse_hexrgb(c->data)) == NULL &&
 			(color = try_parse_decrgb(c->data)) == NULL &&
@@ -41,7 +40,7 @@ parse(struct ccm_list *tokens)
 	return colors;
 }
 
-static struct Color *
+static struct RGB *
 try_parse_hsvhsl(char *token) /* hsv(H, S, V) */
 {
 	bool hsv;
@@ -71,12 +70,12 @@ try_parse_hsvhsl(char *token) /* hsv(H, S, V) */
 	}
 
 	if (hsv)
-		return color_from_hsv(vals[0], vals[1], vals[2]);
+		return rgb_from_hsv(vals[0], vals[1], vals[2]);
 	else
-		return color_from_hsl(vals[0], vals[1], vals[2]);
+		return rgb_from_hsl(vals[0], vals[1], vals[2]);
 }
 
-static struct Color *
+static struct RGB *
 try_parse_decrgb(char *token) /* RRR,GGG,BBB */
 {
 	if (token[0] < '0' || token[0] > '9') {
@@ -99,20 +98,20 @@ try_parse_decrgb(char *token) /* RRR,GGG,BBB */
 		return NULL;
 	}
 
-	struct Color *rgb = calloc(1, sizeof(struct Color));
+	struct RGB *rgb = calloc(1, sizeof(struct RGB));
 	rgb->r = vals[0];
 	rgb->g = vals[1];
 	rgb->b = vals[2];
 	return rgb;
 }
 
-static struct Color *
+static struct RGB *
 try_parse_hexrgb(char *token) /* #R[R]G[G]B[B] */
 {
 	while (isspace(*token)) ++token;
 	if (*token == '#') ++token;
 
-	struct Color *rgb = calloc(1, sizeof(struct Color));
+	struct RGB *rgb = calloc(1, sizeof(struct RGB));
 	rgb->r = rgb->g = rgb->b = 0;
 
 	usize hex  = (usize) strtol(token, NULL, 16);

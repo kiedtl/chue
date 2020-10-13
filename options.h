@@ -3,13 +3,14 @@
 
 #include "bool.h"
 
+enum DisplayType {
+	HEXRGB, DECRGB,
+	HSL, HSV, NONE
+};
+
 struct Options {
 	bool display_color;
-	bool display_hexrgb;
-
-	bool display_decrgb;
-	bool display_hsl;
-	bool display_hsv;
+	enum DisplayType display;
 };
 
 #endif
