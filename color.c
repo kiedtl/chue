@@ -1,55 +1,88 @@
 #include "color.h"
 
+#include <math.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-/* derived from this SO answer:
- * https://stackoverflow.com/a/14733008
- */
 struct Color *
-color_from_hsv(u8 h, u8 s, u8 v)
+color_from_hsl(double h, double s, double l)
 {
 	struct Color *rgb = calloc(1, sizeof(struct Color));
 	if (rgb == NULL) perror("chue: error: could not calloc");
 
-	u8 region, remainder, p, q, t;
+	u8 region = round(h / 60);
+	double C = (1 - abs(round((2 * l) - 1))) * s;
+	double X = C * (1 - abs(region % 2 - 1));
+	double m = l - C / 2;
 
-	if (s == 0)
-	{
-		rgb->r = v;
-		rgb->g = v;
-		rgb->b = v;
-		return rgb;
-	}
-
-	region = h / 43;
-	remainder = (h - (region * 43)) * 6; 
-
-	p = (v * (255 - s)) >> 8;
-	q = (v * (255 - ((s * remainder) >> 8))) >> 8;
-	t = (v * (255 - ((s * (255 - remainder)) >> 8))) >> 8;
+	struct Color tmp;
 
 	switch (region) {
 	case 0:
-		rgb->r = v; rgb->g = t; rgb->b = p;
+		tmp.r = C; tmp.g = X; tmp.b = 0;
 		break;
 	case 1:
-		rgb->r = q; rgb->g = v; rgb->b = p;
+		tmp.r = X; tmp.g = C; tmp.b = 0;
 		break;
 	case 2:
-		rgb->r = p; rgb->g = v; rgb->b = t;
+		tmp.r = 0; tmp.g = C; tmp.b = X;
 		break;
 	case 3:
-		rgb->r = p; rgb->g = q; rgb->b = v;
+		tmp.r = 0; tmp.g = X; tmp.b = C;
 		break;
 	case 4:
-		rgb->r = t; rgb->g = p; rgb->b = v;
+		tmp.r = X; tmp.g = 0; tmp.b = C;
 		break;
 	default:
-		rgb->r = v; rgb->g = p; rgb->b = q;
+		tmp.r = C; tmp.g = 0; tmp.b = X;
 		break;
 	}
+
+	rgb->r = (tmp.r + m) * 255;
+	rgb->g = (tmp.g + m) * 255;
+	rgb->b = (tmp.b + m) * 255;
+
+	return rgb;
+}
+
+struct Color *
+color_from_hsv(double h, double s, double v)
+{
+	struct Color *rgb = calloc(1, sizeof(struct Color));
+	if (rgb == NULL) perror("chue: error: could not calloc");
+
+	u8 region = round(h / 60);
+	double C = v * s;
+	double X = C * (1 - abs(region % 2 - 1));
+	double m = v - C;
+
+	struct Color tmp;
+
+	switch (region) {
+	case 0:
+		tmp.r = C; tmp.g = X; tmp.b = 0;
+		break;
+	case 1:
+		tmp.r = X; tmp.g = C; tmp.b = 0;
+		break;
+	case 2:
+		tmp.r = 0; tmp.g = C; tmp.b = X;
+		break;
+	case 3:
+		tmp.r = 0; tmp.g = X; tmp.b = C;
+		break;
+	case 4:
+		tmp.r = X; tmp.g = 0; tmp.b = C;
+		break;
+	default:
+		tmp.r = C; tmp.g = 0; tmp.b = X;
+		break;
+	}
+
+	rgb->r = (tmp.r + m) * 255;
+	rgb->g = (tmp.g + m) * 255;
+	rgb->b = (tmp.b + m) * 255;
 
 	return rgb;
 }

@@ -22,7 +22,7 @@ INC     = -I. -Iccommon/include/
 DEF     =
 
 CFLAGS  = -std=c99 -DVERSION=$(VERSION) -D_DEFAULT_SOURCE $(WARNING) $(INC)
-LDFLAGS = -fuse-ld=$(LD)
+LDFLAGS = -lm -fuse-ld=$(LD)
 
 all: debug
 #all: man/$(BIN).1 debug

@@ -4,5 +4,6 @@
 
 struct Color { u8 r, g, b; };
 
-struct Color *color_from_hsv(u8 h, u8 s, u8 v);
+struct Color *color_from_hsl(double h, double s, double l);
+struct Color *color_from_hsv(double h, double s, double v);
 #endif

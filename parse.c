@@ -10,7 +10,7 @@
 #include "types.h"
 #include "result.h"
 
-static struct Color *try_parse_hsv(char *token);
+static struct Color *try_parse_hsvhsl(char *token);
 static struct Color *try_parse_hexrgb(char *token);
 
 struct ccm_list *
@@ -30,7 +30,7 @@ parse(struct ccm_list *tokens)
 		struct Color *color;
 
 		if ((color = try_parse_hexrgb(c->data)) == NULL &&
-			(color = try_parse_hsv(c->data)) == NULL) {
+			(color = try_parse_hsvhsl(c->data)) == NULL) {
 		} else {
 			UNWRAP(ccm_list_push(colors, color));
 		}
@@ -40,20 +40,27 @@ parse(struct ccm_list *tokens)
 }
 
 static struct Color *
-try_parse_hsv(char *token) /* hsv(H, S, V) */
+try_parse_hsvhsl(char *token) /* hsv(H, S, V) */
 {
-	if (strncmp((const char *) token, "hsv(", 4) != 0) {
-		return NULL;
-	} else {
+	bool hsv;
+
+	if (strncmp((const char *) token, "hsv(", 4) == 0) {
 		token += 4;
+		hsv = TRUE;
+	} else if (strncmp((const char *) token, "hsl(", 4) == 0) {
+		token += 4;
+		hsv = FALSE;
+	} else {
+		return NULL;
 	}
 
+	/* we only need 3 values, the last is ignored */
+	double vals[3];
 	usize ctr;
-	u8 vals[3]; /* we only need 3 values, the last is ignored */
 
 	for (ctr = 0; ctr < 3; ++ctr) {
 		char *val = strsep(&token, ",");
-		vals[ctr] = strtol(val, NULL, 10);
+		vals[ctr] = strtod(val, NULL);
 	}
 
 	if (ctr < 2) {
@@ -61,7 +68,10 @@ try_parse_hsv(char *token) /* hsv(H, S, V) */
 		return NULL;
 	}
 
-	return color_from_hsv(vals[0], vals[1], vals[2]);
+	if (hsv)
+		return color_from_hsv(vals[0], vals[1], vals[2]);
+	else
+		return color_from_hsl(vals[0], vals[1], vals[2]);
 }
 
 static struct Color *
