@@ -10,6 +10,7 @@
 #include "types.h"
 #include "result.h"
 
+static struct Color *try_parse_hsv(char *token);
 static struct Color *try_parse_hexrgb(char *token);
 
 struct ccm_list *
@@ -17,34 +18,50 @@ parse(struct ccm_list *tokens)
 {
 	struct ccm_list *colors = UNWRAP(ccm_list_create());
 
-	/* this is not easy. we need to support the
-	 * following formats:
-	 *     1) blue, green, red, etc
-	 *     2) #RGBA
-	 *     3) #RRGGBBAA
-	 *     4) #RRRRGGGGBBBBAA
-	 *     5) RRR,GGG,BBB,AAA
-	 *     6) oh, and the #RGB* variants must not require a hashbang
+	/* we need to support the following formats:
+	 *     1) blue, green, red, magenta, &c
+	 *     2) #RGB and #RRGGBB
+	 *     5) RRR,GGG,BBB
+	 *     6) the #RGB* variants must not require a pound
 	 *     7) not to mention the HS(L|V) stuff
-	 *
-	 * thank goodness we're not going to
-	 * support HS(L|V)
-	 *
-	 * note: alpha is ignored as we can't
-	 * display it.
-	 *
-	 * :'(
 	 */
 
 	for (struct ccm_list *c = tokens->next; c != NULL; c = c->next) {
-		struct Color *color = try_parse_hexrgb(c->data);
+		struct Color *color;
 
-		if (color != NULL) {
+		if ((color = try_parse_hexrgb(c->data)) == NULL &&
+			(color = try_parse_hsv(c->data)) == NULL) {
+		} else {
 			UNWRAP(ccm_list_push(colors, color));
 		}
 	}
 
 	return colors;
+}
+
+static struct Color *
+try_parse_hsv(char *token) /* hsv(H, S, V) */
+{
+	if (strncmp((const char *) token, "hsv(", 4) != 0) {
+		return NULL;
+	} else {
+		token += 4;
+	}
+
+	usize ctr;
+	u8 vals[3]; /* we only need 3 values, the last is ignored */
+
+	for (ctr = 0; ctr < 3; ++ctr) {
+		char *val = strsep(&token, ",");
+		vals[ctr] = strtol(val, NULL, 10);
+	}
+
+	if (ctr < 2) {
+		/* not enough fields in hsv() */
+		return NULL;
+	}
+
+	return color_from_hsv(vals[0], vals[1], vals[2]);
 }
 
 static struct Color *
@@ -54,18 +71,18 @@ try_parse_hexrgb(char *token) /* #R[R]G[G]B[B] */
 	if (*token == '#') ++token;
 
 	struct Color *rgb = calloc(1, sizeof(struct Color));
-	rgb->red = rgb->green = rgb->blue = 0;
+	rgb->r = rgb->g = rgb->b = 0;
 
 	usize hex  = (usize) strtol(token, NULL, 16);
 
 	if (strlen(token) == 3) {
-		rgb->red   = ((hex >> 8) & 0xF) << 4 | ((hex >> 8) & 0xF);
-		rgb->green = ((hex >> 4) & 0xF) << 4 | ((hex >> 4) & 0xF);
-		rgb->blue  = ((hex >> 0) & 0xF) << 4 | ((hex >> 0) & 0xF);
+		rgb->r = ((hex >> 8) & 0xF) << 4 | ((hex >> 8) & 0xF);
+		rgb->g = ((hex >> 4) & 0xF) << 4 | ((hex >> 4) & 0xF);
+		rgb->b = ((hex >> 0) & 0xF) << 4 | ((hex >> 0) & 0xF);
 	} else if (strlen(token) == 6) {
-		rgb->red   = (hex >> 16) & 0xFF;
-		rgb->green = (hex >>  8) & 0xFF;
-		rgb->blue  = (hex)       & 0xFF;
+		rgb->r = (hex >> 16) & 0xFF;
+		rgb->g = (hex >>  8) & 0xFF;
+		rgb->b = (hex)       & 0xFF;
 	} else {
 		/* unexpected token size, unexpected format */
 		free(rgb);
