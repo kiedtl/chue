@@ -4,11 +4,29 @@ a cat(1) for colors.
 
 ---
 
-This project is mostly intended to test out some of my ideas:
+This project was originally intended to test out some of my ideas:
 
 - linked list and vector implementation.
 - error handling with sum types (e.g. Rust's `Result<T, E>`)
 - a non-null-terminated string.
 
-A lot of code is experimental; expect to find some pretty
-atrocious code here.
+Alas, most of the code is neither well written nor well tested.
+Expect to find bugs, snakes, and dead bunnies.
+
+If you need **advanced** functionality, the author would highly
+recommend [pastel](https://github.com/sharkdp/pastel) instead.
+chue is OK for simple things, though.
+
+## installation
+
+If you still want to install this monstrosity, you'll need `make`
+and a C99 compiler.
+
+Then:
+
+```
+$ make
+# install -Dm755 ./chue /usr/local/bin/chue
+```
+
+See `./chue -h` for usage information.
