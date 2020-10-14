@@ -25,7 +25,7 @@ CFLAGS  = -std=c99 -DVERSION=$(VERSION) -D_DEFAULT_SOURCE \
 	  $(WARNING) $(INC)
 LDFLAGS = -lm -fuse-ld=$(LD)
 
-all: man/$(BIN).1 debug
+all: debug docs
 
 .c.o:
 	@printf "    %-8s%s\n" "CC" $@
@@ -43,6 +43,7 @@ $(BIN): $(OBJ)
 	@printf "    %-8s%s\n" "CCLD" $@
 	$(CMD)$(CC) -o $@ $^ $(CFLAGS) $(CFLAGS_OPT) $(LDFLAGS) $(LDFLAGS_OPT)
 
+docs: man/$(BIN).1
 man/$(BIN).1: man/$(BIN).1.scd
 	@printf "    %-8s%s\n" "SCDOC" $@
 	$(CMD)scdoc < $^ > $@
@@ -50,8 +51,10 @@ man/$(BIN).1: man/$(BIN).1.scd
 clean:
 	$(CMD)rm -f $(BIN) $(OBJ) man/$(BIN).1
 
-install: $(BIN) $(BIN).1
+install: docs $(BIN)
+	@printf "    %-8s%s\n" "INSTALL" $@
 	$(CMD)install -Dm755 $(BIN) $(DESTDIR)/$(PREFIX)/bin/$(BIN)
+	@printf "    %-8s%s\n" "INSTALL" $@
 	$(CMD)install -Dm644 man/$(BIN).1 $(DESTDIR)/$(PREFIX)/share/man/man1/$(BIN).1
 
 uninstall:
