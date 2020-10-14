@@ -28,6 +28,10 @@ display(struct ccm_list *colors, struct Options *opts)
 			struct HSV *hsv = hsv_from_rgb(c);
 			sprintf((char *) &colorstr, "hsv(%.2f,%.2f,%.2f)\t",
 				hsv->h, hsv->s, hsv->v);
+		} else if (opts->display == HSL) {
+			struct HSL *hsl = hsl_from_rgb(c);
+			sprintf((char *) &colorstr, "hsl(%.2f,%.2f,%.2f)\t",
+				hsl->h, hsl->s, hsl->l);
 		} else {
 			colorstr[0] = '\0';
 		}

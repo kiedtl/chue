@@ -22,13 +22,16 @@ main(int argc, char **argv)
 
 	/* parse arguments */
 	isize opt = 0;
-        while ((opt = getopt(argc, argv, "Vhcxdv")) != -1) {
+        while ((opt = getopt(argc, argv, "Vhcxdvl")) != -1) {
 		switch (opt) {
 		case 'c': /* disable color */
 			opts.display_color = FALSE;
 			break;
 		case 'v': /* enable hsv */
 			opts.display = HSV;
+			break;
+		case 'l': /* enable hsl */
+			opts.display = HSL;
 			break;
 		case 'x': /* disable hex rgb */
 			opts.display = NONE;

@@ -17,37 +17,38 @@ rgb_from_hsl(double h, double s, double l)
 	struct RGB *rgb = calloc(1, sizeof(struct RGB));
 	if (rgb == NULL) perror("chue: error: could not calloc");
 
-	u8 region = round(h / 60);
-	double C = (1 - abs((isize) round((2 * l) - 1))) * s;
-	double X = C * (1 - abs(region % 2 - 1));
+	double C = (1 - fabs((2 * l) - 1)) * s;
+	double X = C * (1 - fabs(fmod(h / 60, 2) - 1));
 	double m = l - C / 2;
 
-	struct RGB tmp;
+	double tr = ((double) rgb->r) / 255.0;
+	double tg = ((double) rgb->g) / 255.0;
+	double tb = ((double) rgb->b) / 255.0;
 
-	switch (region) {
+	switch ((usize) round(h / 60)) {
 	case 0:
-		tmp.r = C; tmp.g = X; tmp.b = 0;
+		tr = C; tg = X; tb = 0;
 		break;
 	case 1:
-		tmp.r = X; tmp.g = C; tmp.b = 0;
+		tr = X; tg = C; tb = 0;
 		break;
 	case 2:
-		tmp.r = 0; tmp.g = C; tmp.b = X;
+		tr = 0; tg = C; tb = X;
 		break;
 	case 3:
-		tmp.r = 0; tmp.g = X; tmp.b = C;
+		tr = 0; tg = X; tb = C;
 		break;
 	case 4:
-		tmp.r = X; tmp.g = 0; tmp.b = C;
+		tr = X; tg = 0; tb = C;
 		break;
 	default:
-		tmp.r = C; tmp.g = 0; tmp.b = X;
+		tr = C; tg = 0; tb = X;
 		break;
 	}
 
-	rgb->r = (tmp.r + m) * 255;
-	rgb->g = (tmp.g + m) * 255;
-	rgb->b = (tmp.b + m) * 255;
+	rgb->r = (u8) round((tr + m) * 255.0);
+	rgb->g = (u8) round((tg + m) * 255.0);
+	rgb->b = (u8) round((tb + m) * 255.0);
 
 	return rgb;
 }
@@ -87,9 +88,9 @@ rgb_from_hsv(double h, double s, double v)
 		break;
 	}
 
-	rgb->r = (tr + m) * 255;
-	rgb->g = (tg + m) * 255;
-	rgb->b = (tb + m) * 255;
+	rgb->r = (u8) round((tr + m) * 255.0);
+	rgb->g = (u8) round((tg + m) * 255.0);
+	rgb->b = (u8) round((tb + m) * 255.0);
 
 	return rgb;
 }
@@ -132,4 +133,44 @@ hsv_from_rgb(struct RGB *rgb)
 	hsv->v = Cmax;
 
 	return hsv;
+}
+
+struct HSL *
+hsl_from_rgb(struct RGB *rgb)
+{
+	struct HSL *hsl = calloc(1, sizeof(struct HSL));
+	if (hsl == NULL) perror("chue: error: could not calloc");
+
+	double tr = ((double) rgb->r) / 255.0;
+	double tg = ((double) rgb->g) / 255.0;
+	double tb = ((double) rgb->b) / 255.0;
+
+	double Cmax = MAX3(tr, tg, tb);
+	double Cmin = MIN3(tr, tg, tb);
+	double delt = Cmax - Cmin;
+
+	/* comparing floating points with == or != should
+	 * be completely safe here */
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic push
+	if (delt == 0.0) {
+		hsl->h = 0;
+	} else if (Cmax == tr) {
+		hsl->h = 60 * fmod(((tg - tb) / delt), 6.0);
+	} else if (Cmax == tg) {
+		hsl->h = 60 * (((tb - tr) / delt) + 2.0);
+	} else if (Cmax == tb) {
+		hsl->h = 60 * (((tr - tg) / delt) + 4.0);
+	}
+#pragma GCC diagnostic pop
+
+	hsl->l = Cmax - Cmin;
+
+	if (Cmax == 0) {
+		hsl->s = 0;
+	} else {
+		hsl->s = delt / (1 - fabs(2 * hsl->l - 1));
+	}
+
+	return hsl;
 }
