@@ -22,12 +22,10 @@ INC     = -I. -Iccommon/include/
 DEF     =
 
 CFLAGS  = -std=c99 -DVERSION=$(VERSION) -D_DEFAULT_SOURCE \
-	  -Og -ggdb \
 	  $(WARNING) $(INC)
 LDFLAGS = -lm -fuse-ld=$(LD)
 
-all: debug
-#all: man/$(BIN).1 debug
+all: man/$(BIN).1 debug
 
 .c.o:
 	@printf "    %-8s%s\n" "CC" $@
@@ -45,7 +43,7 @@ $(BIN): $(OBJ)
 	@printf "    %-8s%s\n" "CCLD" $@
 	$(CMD)$(CC) -o $@ $^ $(CFLAGS) $(CFLAGS_OPT) $(LDFLAGS) $(LDFLAGS_OPT)
 
-man/$(BIN).1: man/$(BIN).scd
+man/$(BIN).1: man/$(BIN).1.scd
 	@printf "    %-8s%s\n" "SCDOC" $@
 	$(CMD)scdoc < $^ > $@
 
@@ -55,7 +53,6 @@ clean:
 install: $(BIN) $(BIN).1
 	$(CMD)install -Dm755 $(BIN) $(DESTDIR)/$(PREFIX)/bin/$(BIN)
 	$(CMD)install -Dm644 man/$(BIN).1 $(DESTDIR)/$(PREFIX)/share/man/man1/$(BIN).1
-	$(CMD)install -Dm644 lib/chars.db $(HOME)/.local/share/$(BIN)/chars.db
 
 uninstall:
 	$(CMD)rm -f $(DESTDIR)/$(PREFIX)/bin/$(BIN)
