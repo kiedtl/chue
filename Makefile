@@ -61,4 +61,4 @@ uninstall:
 	$(CMD)rm -f $(DESTDIR)/$(PREFIX)/bin/$(BIN)
 	$(CMD)rm -f $(DESTDIR)/$(PREFIX)/share/man/man1/$(BIN).1
 
-.PHONY: all debug release clean install uninstall
+.PHONY: all debug docs release clean install uninstall
