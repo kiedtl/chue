@@ -6,4 +6,5 @@ TODO
 - cleanse code of "Result" abomination
 - manpage!
 - `make install` recipe
+- use `getopt_long` instead of `getopt` for parsing arguments
 - release v0.1.0
