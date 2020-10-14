@@ -13,6 +13,23 @@
 #include "parse.h"
 #include "types.h"
 
+const char *optstr  = "Vhcxdvl";
+const char *helpstr = "usage: chue [-Vhcxdvl] [FILE]...\n"
+			 "Copyright (c) 2020 Kiëd Llaentenn\n\n"
+			 "If no FILE, read colors from stdin.\n\n"
+			 "Options:\n"
+			 "    -V    Print version.\n"
+			 "    -h    Print this help message.\n"
+			 "    -c    Do not print the color bar.\n"
+			 "    -x    Do not print the color value.\n"
+			 "    -d    Print the color in decimal RGB form.\n"
+			 "    -v    Print the color in HSV form.\n"
+			 "    -l    Print the color in HSL form.\n\n"
+			 "Examples:\n"
+			 "    echo '#ababab' | ./chue\n"
+			 "    echo 'hsl(23,0.04,0.02)' | ./chue -v\n"
+			 "    echo '234,29,65' | ./chue -x\n";
+
 int
 main(int argc, char **argv)
 {
@@ -33,7 +50,7 @@ main(int argc, char **argv)
 		case 'l': /* enable hsl */
 			opts.display = HSL;
 			break;
-		case 'x': /* disable hex rgb */
+		case 'x': /* disable printing colors */
 			opts.display = NONE;
 			break;
 		case 'd': /* enable decimal rgb */
@@ -44,11 +61,10 @@ main(int argc, char **argv)
 			return 0;
 			break;
 		case 'h':
-			printf("usage: chue [-Vhcxd]\n");
-			return 0;
+			printf("%s", helpstr); return 0;
 			break;
 		default:
-			fprintf(stderr, "usage: chue [-Vhcxd]\n");
+			fprintf(stderr, "usage: %s [-%s]\n", argv[0], optstr);
 			return 1;
 			break;
 		}
