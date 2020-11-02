@@ -32,6 +32,8 @@ parse(struct ccm_list *tokens)
 		if ((color = try_parse_hexrgb(c->data)) == NULL &&
 			(color = try_parse_decrgb(c->data)) == NULL &&
 			(color = try_parse_hsvhsl(c->data)) == NULL) {
+			fprintf(stderr, "chue: ignore invalid color '%s'.",
+				(char *) c->data);
 		} else {
 			UNWRAP(ccm_list_push(colors, color));
 		}
