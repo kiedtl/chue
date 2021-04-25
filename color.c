@@ -101,31 +101,29 @@ hsv_from_rgb(struct RGB *rgb)
 	struct HSV *hsv = calloc(1, sizeof(struct HSV));
 	if (hsv == NULL) perror("chue: error: could not calloc");
 
-	double tr = ((double) rgb->r) / 255.0;
-	double tg = ((double) rgb->g) / 255.0;
-	double tb = ((double) rgb->b) / 255.0;
+	double tr = ((double)rgb->r) / 255.0;
+	double tg = ((double)rgb->g) / 255.0;
+	double tb = ((double)rgb->b) / 255.0;
 
-	double Cmax = MAX3(tr, tg, tb);
-	double Cmin = MIN3(tr, tg, tb);
-	double delt = Cmax - Cmin;
+	double Xmax = MAX3(tr, tg, tb);
+	double Xmin = MIN3(tr, tg, tb);
+	double C    = Xmax - Xmin;
 
-	if (delt <= 0.0) {
+	hsv->v = Xmax;
+	hsv->s = Xmax == 0 ? 0 : C / Xmax;
+
+	if (C == 0.0) {
 		hsv->h = 0;
-	} else if (Cmax == tr) {
-		hsv->h = 60.0 * fmod(((tg - tb) / delt), 6.0);
-	} else if (Cmax == tg) {
-		hsv->h = 60.0 * (((tb - tr) / delt) + 2.0);
-	} else if (Cmax == tb) {
-		hsv->h = 60.0 * (((tr - tg) / delt) + 4.0);
+	} else if (Xmax == tr) {
+		hsv->h = 60.0 * (((tg - tb) / C) + 0.0);
+	} else if (Xmax == tg) {
+		hsv->h = 60.0 * (((tb - tr) / C) + 2.0);
+	} else if (Xmax == tb) {
+		hsv->h = 60.0 * (((tr - tg) / C) + 4.0);
 	}
 
-	if (Cmax == 0) {
-		hsv->s = 0;
-	} else {
-		hsv->s = delt / Cmax;
-	}
-
-	hsv->v = Cmax;
+	if (hsv->h < 0.0)
+		hsv->h += 360.0;
 
 	hsv->s *= 100, hsv->v *= 100;
 	return hsv;
