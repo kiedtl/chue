@@ -4,3 +4,4 @@
 # ignore compiled files
 **/*.[ao]
 chue
+tests/pilot
