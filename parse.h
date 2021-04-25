@@ -1,8 +1,8 @@
 #ifndef PARSE_H
 #define PARSE_H
 
-#include "list.h"
+#include "color.h"
 
-struct ccm_list *parse(struct ccm_list *tokens);
+_Bool parse(struct RGB *rgb, char *str);
 
 #endif

@@ -1,9 +1,9 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include "list.h"
+#include "color.h"
 #include "options.h"
 
-void display(struct ccm_list *colors, struct Options *opts);
+void display(struct RGB *c, struct Options *opts);
 
 #endif

@@ -6,7 +6,6 @@
 #include "color.h"
 #include "die.h"
 #include "display.h"
-#include "lex.h"
 #include "list.h"
 #include "read.h"
 #include "options.h"
@@ -80,18 +79,27 @@ main(int argc, char **argv)
 			UNWRAP(ccm_list_push(paths, (void*) argv[++optind]));
 	}
 
-	/* foreach path, read, lex, parse, and display */
+	struct RGB rgb;
+	char buf[4096] = {0}, *p = (char *)&buf;
+	ssize_t ch = -1;
+
 	for (struct ccm_list *c = paths->next; c != NULL; c = c->next) {
-		u8 *buf = NULL;
-		usize read = read_to_end(c->data, &buf); // TODO: handle err
-		struct ccm_list *tokens = lex(buf, read); // TODO: handle err
-		struct ccm_list *colors = parse(tokens);  // TODO: handle err
-		display(colors, &opts);
-		free(buf);
-		UNWRAP(ccm_list_destroy(tokens));
-		UNWRAP(ccm_list_destroy(colors));
+		while ((ch = fgetc(stdin)) != EOF) {
+			switch (ch) {
+			break; case '\n': case ' ':
+				*p = '\0';
+				if (!parse(&rgb, buf)) {
+					fprintf(stderr, "chue: ignore invalid color '%s'.",
+						(char *) c->data);
+				} else {
+					display(&rgb, &opts);
+				}
+				buf[0] = '\0', p = (char *)&buf;
+			break; default:
+				*p = ch, ++p;
+			}
+		}
 	}
 
-	UNWRAP(ccm_list_destroy(paths));
 	return 0;
 }

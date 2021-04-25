@@ -61,4 +61,10 @@ uninstall:
 	$(CMD)rm -f $(DESTDIR)/$(PREFIX)/bin/$(BIN)
 	$(CMD)rm -f $(DESTDIR)/$(PREFIX)/share/man/man1/$(BIN).1
 
+check:
+	$(CMD)for i in tests/pilot*.c; do \
+		cc -I. -Iccommon/include/ $$i -o $${i%%.c} -O0 -g -lm || exit 1; \
+	done
+	$(CMD)find tests -name '*.sh' -perm -700 -exec '{}' \;
+
 .PHONY: all debug docs release clean install uninstall

@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,38 +10,6 @@
 #include "parse.h"
 #include "types.h"
 #include "result.h"
-
-static struct RGB *try_parse_hsvhsl(char *token);
-static struct RGB *try_parse_decrgb(char *token);
-static struct RGB *try_parse_hexrgb(char *token);
-
-struct ccm_list *
-parse(struct ccm_list *tokens)
-{
-	struct ccm_list *colors = UNWRAP(ccm_list_create());
-
-	/* we need to support the following formats:
-	 *     1) #RGB and #RRGGBB
-	 *     2) RRR,GGG,BBB
-	 *     3) the #RGB* variants must not require a pound
-	 *     4) not to mention the HS(L|V) stuff
-	 */
-
-	for (struct ccm_list *c = tokens->next; c != NULL; c = c->next) {
-		struct RGB *color;
-
-		if ((color = try_parse_hexrgb(c->data)) == NULL &&
-			(color = try_parse_decrgb(c->data)) == NULL &&
-			(color = try_parse_hsvhsl(c->data)) == NULL) {
-			fprintf(stderr, "chue: ignore invalid color '%s'.",
-				(char *) c->data);
-		} else {
-			UNWRAP(ccm_list_push(colors, color));
-		}
-	}
-
-	return colors;
-}
 
 static struct RGB *
 try_parse_hsvhsl(char *token) /* hsv(H, S, V) */
@@ -134,3 +103,21 @@ try_parse_hexrgb(char *token) /* #R[R]G[G]B[B] */
 
 	return rgb;
 }
+
+_Bool
+parse(struct RGB *rgb, char *str)
+{
+	struct RGB *color;
+
+	if ((color = try_parse_hexrgb(str)) == NULL &&
+		(color = try_parse_decrgb(str)) == NULL &&
+		(color = try_parse_hsvhsl(str)) == NULL) {
+		return false;
+	} else {
+		rgb->r = color->r;
+		rgb->g = color->g;
+		rgb->b = color->b;
+		return true;
+	}
+}
+
