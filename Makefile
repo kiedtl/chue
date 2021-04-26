@@ -10,8 +10,7 @@ include config.mk
 VERSION = \"0.1.0\"
 
 BIN     = chue
-SRC     = main.c list.c read.c lex.c parse.c display.c result.c \
-	  color.c ccommon/src/die.c
+SRC     = main.c parse.c display.c color.c
 OBJ     = $(SRC:.c=.o)
 
 WARNING = -Wall -Wextra -Wold-style-definition \

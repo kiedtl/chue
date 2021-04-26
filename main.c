@@ -29,6 +29,18 @@ const char *helpstr = "usage: chue [-Vhcxdvl] [FILE]...\n"
 			 "    echo 'hsl(23,0.04,0.02)' | ./chue -v\n"
 			 "    echo '234,29,65' | ./chue -x\n";
 
+static void
+chue(struct Options *opts, char *color)
+{
+	struct RGB *rgb = {0};
+
+	if (!parse(rgb, color)) {
+		fprintf(stderr, "chue: ignore invalid color '%s'.", color);
+	} else {
+		display(rgb, opts);
+	}
+}
+
 int
 main(int argc, char **argv)
 {
@@ -69,36 +81,24 @@ main(int argc, char **argv)
 		}
 	}
 
-	struct ccm_list *paths = UNWRAP(ccm_list_create());
-
 	if (optind >= argc) {
-		/* just push stdin if no paths provided */
-		UNWRAP(ccm_list_push(paths, (void*) "-"));
-	} else {
-		while (optind < argc)
-			UNWRAP(ccm_list_push(paths, (void*) argv[++optind]));
-	}
-
-	struct RGB rgb;
-	char buf[4096] = {0}, *p = (char *)&buf;
-	ssize_t ch = -1;
-
-	for (struct ccm_list *c = paths->next; c != NULL; c = c->next) {
+		/* just read from stdin if no colors provided */
+		char buf[4096] = {0}, *p = (char *)&buf;
+		ssize_t ch = -1;
+	
 		while ((ch = fgetc(stdin)) != EOF) {
 			switch (ch) {
 			break; case '\n': case ' ':
 				*p = '\0';
-				if (!parse(&rgb, buf)) {
-					fprintf(stderr, "chue: ignore invalid color '%s'.",
-						(char *) c->data);
-				} else {
-					display(&rgb, &opts);
-				}
+				chue(&opts, buf);
 				buf[0] = '\0', p = (char *)&buf;
 			break; default:
 				*p = ch, ++p;
 			}
 		}
+	} else {
+		while (optind < argc)
+			chue(&opts, argv[++optind]);
 	}
 
 	return 0;
