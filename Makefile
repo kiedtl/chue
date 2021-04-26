@@ -10,8 +10,9 @@ include config.mk
 VERSION = \"0.1.0\"
 
 BIN     = chue
-SRC     = main.c parse.c display.c color.c
-OBJ     = $(SRC:.c=.o)
+SRC     = main.c parse.c display.c
+ZIGSRC  = color.zig
+OBJ     = $(ZIGSRC:.zig=.o) $(SRC:.c=.o)
 
 WARNING = -Wall -Wextra -Wold-style-definition \
 	  -Wmissing-prototypes -Wfloat-equal -Wstrict-prototypes \
@@ -25,6 +26,10 @@ CFLAGS  = -std=c99 -DVERSION=$(VERSION) -D_DEFAULT_SOURCE \
 LDFLAGS = -lm -fuse-ld=$(LD)
 
 all: debug docs
+
+color.o: color.zig
+	@printf "    %-8s%s\n" "ZIGC" $@
+	$(CMD)zig build-obj $< -fPIC -fcompiler-rt
 
 .c.o:
 	@printf "    %-8s%s\n" "CC" $@

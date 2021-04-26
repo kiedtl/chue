@@ -4,10 +4,7 @@
 
 #include "bool.h"
 #include "color.h"
-#include "die.h"
 #include "display.h"
-#include "list.h"
-#include "read.h"
 #include "options.h"
 #include "parse.h"
 #include "types.h"

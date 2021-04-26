@@ -6,10 +6,8 @@
 
 #include "bool.h"
 #include "color.h"
-#include "list.h"
 #include "parse.h"
 #include "types.h"
-#include "result.h"
 
 static struct RGB *
 try_parse_hsvhsl(char *token) /* hsv(H, S, V) */

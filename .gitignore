@@ -5,3 +5,5 @@
 **/*.[ao]
 chue
 tests/pilot
+**/*.1
+zig-cache/
