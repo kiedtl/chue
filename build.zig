@@ -11,7 +11,4 @@ pub fn build(b: *Builder) void {
 
     exe.linkSystemLibrary("c");
     exe.install();
-
-    //exe.setOutputPath("./chue");
-    //b.default_step.dependOn(&exe.step);
 }

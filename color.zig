@@ -182,7 +182,7 @@ fn _hue_to_rgb(p: f64, q: f64, _t: f64) f64 {
     return p;
 }
 
-pub export fn rgb_from_hsl(_h: f64, _s: f64, _l: f64) RGB {
+export fn rgb_from_hsl(_h: f64, _s: f64, _l: f64) RGB {
     const h = _h / 360.0;
     const s = _s / 100.0;
     const l = _l / 100.0;
@@ -211,7 +211,7 @@ pub export fn rgb_from_hsl(_h: f64, _s: f64, _l: f64) RGB {
     };
 }
 
-pub export fn rgb_from_hsv(h: f64, _s: f64, _v: f64) RGB {
+export fn rgb_from_hsv(h: f64, _s: f64, _v: f64) RGB {
     const s = _s / 100;
     const v = _v / 100;
 
@@ -270,7 +270,7 @@ pub export fn rgb_from_hsv(h: f64, _s: f64, _v: f64) RGB {
     };
 }
 
-pub export fn hsv_from_rgb(rgb: RGB) HSV {
+export fn hsv_from_rgb(rgb: RGB) HSV {
     // XXX: guh type inference is a thing
     var hue: f64 = 0.0;
     var saturation: f64 = 0.0;
@@ -307,7 +307,7 @@ pub export fn hsv_from_rgb(rgb: RGB) HSV {
     };
 }
 
-pub export fn hsl_from_rgb(rgb: RGB) HSL {
+export fn hsl_from_rgb(rgb: RGB) HSL {
     var hsl: HSL = HSL{ .h = 0.0, .s = 0.0, .l = 0.0 };
 
     const tr = @intToFloat(f64, rgb.r) / 255.0;

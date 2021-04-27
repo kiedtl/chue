@@ -13,11 +13,11 @@ display(struct RGB *c, struct Options *opts)
 	} else if (opts->display == DECRGB) {
 		printf("%03i,%03i,%03i\t", c->r, c->g, c->b);
 	} else if (opts->display == HSV) {
-		struct HSV *hsv = hsv_from_rgb(c);
-		printf("hsv(%.2f,%.2f,%.2f)\t", hsv->h, hsv->s, hsv->v);
+		struct HSV hsv = hsv_from_rgb(*c);
+		printf("hsv(%.2f,%.2f,%.2f)\t", hsv.h, hsv.s, hsv.v);
 	} else if (opts->display == HSL) {
-		struct HSL *hsl = hsl_from_rgb(c);
-		printf("hsl(%.2f,%.2f,%.2f)\t", hsl->h, hsl->s, hsl->l);
+		struct HSL hsl = hsl_from_rgb(*c);
+		printf("hsl(%.2f,%.2f,%.2f)\t", hsl.h, hsl.s, hsl.l);
 	}
 
 	if (opts->display_color) {
