@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdbool.h>
 
-#include "bool.h"
 #include "color.h"
 #include "display.h"
 #include "options.h"
 #include "parse.h"
-#include "types.h"
+
+#define VERSION "0.1.0"
+
 
 const char *optstr  = "Vhcxdvl";
 const char *helpstr = "usage: chue [-Vhcxdvl] [FILE]...\n"
@@ -29,12 +31,12 @@ const char *helpstr = "usage: chue [-Vhcxdvl] [FILE]...\n"
 static void
 chue(struct Options *opts, char *color)
 {
-	struct RGB *rgb = {0};
+	struct RGB rgb = {0};
 
-	if (!parse(rgb, color)) {
+	if (!parse(&rgb, color)) {
 		fprintf(stderr, "chue: ignore invalid color '%s'.", color);
 	} else {
-		display(rgb, opts);
+		display(&rgb, opts);
 	}
 }
 
@@ -42,15 +44,15 @@ int
 main(int argc, char **argv)
 {
 	struct Options opts;
-	opts.display_color  = TRUE;
+	opts.display_color  = true;
 	opts.display = HEXRGB;
 
 	/* parse arguments */
-	isize opt = 0;
+	ssize_t opt = 0;
         while ((opt = getopt(argc, argv, "Vhcxdvl")) != -1) {
 		switch (opt) {
 		case 'c': /* disable color */
-			opts.display_color = FALSE;
+			opts.display_color = false;
 			break;
 		case 'v': /* enable hsv */
 			opts.display = HSV;

@@ -3,30 +3,29 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
-#include "bool.h"
 #include "color.h"
 #include "parse.h"
-#include "types.h"
 
 static struct RGB *
 try_parse_hsvhsl(char *token) /* hsv(H, S, V) */
 {
-	bool hsv;
+	_Bool hsv;
 
 	if (strncmp((const char *) token, "hsv(", 4) == 0) {
 		token += 4;
-		hsv = TRUE;
+		hsv = true;
 	} else if (strncmp((const char *) token, "hsl(", 4) == 0) {
 		token += 4;
-		hsv = FALSE;
+		hsv = false;
 	} else {
 		return NULL;
 	}
 
 	/* we only need 3 values, the last is ignored */
 	double vals[3];
-	usize ctr;
+	size_t ctr;
 
 	for (ctr = 0; ctr < 3; ++ctr) {
 		char *val = strsep(&token, ",");
@@ -52,8 +51,8 @@ try_parse_decrgb(char *token) /* RRR,GGG,BBB */
 	}
 
 	/* we only need 3 values, the last is ignored */
-	u8 vals[3];
-	usize ctr;
+	uint8_t vals[3];
+	size_t ctr;
 
 	for (ctr = 0; ctr < 3; ++ctr) {
 		char *val = strsep(&token, ",");
@@ -83,7 +82,7 @@ try_parse_hexrgb(char *token) /* #R[R]G[G]B[B] */
 	struct RGB *rgb = calloc(1, sizeof(struct RGB));
 	rgb->r = rgb->g = rgb->b = 0;
 
-	usize hex  = (usize) strtol(token, NULL, 16);
+	size_t hex  = (size_t)strtol(token, NULL, 16);
 
 	if (strlen(token) == 3) {
 		rgb->r = ((hex >> 8) & 0xF) << 4 | ((hex >> 8) & 0xF);
@@ -115,6 +114,7 @@ parse(struct RGB *rgb, char *str)
 		rgb->r = color->r;
 		rgb->g = color->g;
 		rgb->b = color->b;
+		free(color);
 		return true;
 	}
 }

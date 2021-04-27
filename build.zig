@@ -1,29 +1,17 @@
-// This file is borken. Just use make.
-//
 const Builder = @import("std").build.Builder;
 
 pub fn build(b: *Builder) void {
-    const exe = b.addCExecutable("chue");
-    exe.addCompileFlags([][]const u8{ "-std=c99", "-I.", "-Iccommon/include" });
+    const obj = b.addObject("color", "color.zig");
 
-    const source_files = [][]const u8{
-        "main.c",
-        "display.c",
-        "parse.c",
-    };
-    const zig_source_files = [][]const u8{
-        "color.zig",
-    };
+    const exe = b.addExecutable("chue", null);
+    exe.addCSourceFile("main.c", &[_][]const u8{ "-std=c99", "-D_XOPEN_SOURCE" });
+    exe.addCSourceFile("parse.c", &[_][]const u8{"-std=c99"});
+    exe.addCSourceFile("display.c", &[_][]const u8{"-std=c99"});
+    exe.addObject(obj);
 
-    for (source_files) |source| {
-        exe.addSourceFile(source);
-    }
+    exe.linkSystemLibrary("c");
+    exe.install();
 
-    for (zig_source_files) |source| {
-        const object = b.addObject(source, source);
-        exe.addObject(object);
-    }
-
-    exe.setOutputPath("./chue");
-    b.default_step.dependOn(&exe.step);
+    //exe.setOutputPath("./chue");
+    //b.default_step.dependOn(&exe.step);
 }
