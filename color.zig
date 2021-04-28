@@ -11,6 +11,15 @@ comptime {
     _ = HSL;
     _ = XYZ;
     _ = LMS;
+    _ = hsl_to_rgb;
+    _ = rgb_to_hsv;
+    _ = rgb_to_hsl;
+    _ = rgb_to_xyz;
+    _ = hsv_to_rgb;
+    _ = xyz_to_rgb;
+    _ = xyz_to_lms;
+    _ = lms_adjust_for_colorblindness;
+    _ = lms_to_xyz;
 }
 
 pub const ColorblindnessFlavor = extern enum {
@@ -23,7 +32,7 @@ pub const RGB = extern struct {
     g: u8,
     b: u8,
 
-    pub export fn rgb_to_hsv(rgb: *RGB) HSV {
+    pub fn to_hsv(rgb: *RGB) HSV {
         // XXX: guh type inference is a thing
         var hue: f64 = 0.0;
         var saturation: f64 = 0.0;
@@ -60,7 +69,7 @@ pub const RGB = extern struct {
         };
     }
 
-    pub export fn rgb_to_hsl(rgb: *RGB) HSL {
+    pub fn to_hsl(rgb: *RGB) HSL {
         var hsl: HSL = HSL{ .h = 0.0, .s = 0.0, .l = 0.0 };
 
         const tr = @intToFloat(f64, rgb.r) / 255.0;
@@ -110,7 +119,7 @@ pub const RGB = extern struct {
         }
     }
 
-    pub export fn rgb_to_xyz(rgb: *RGB) XYZ {
+    pub fn to_xyz(rgb: *RGB) XYZ {
         var r = @intToFloat(f64, rgb.r) / 255.0;
         var g = @intToFloat(f64, rgb.g) / 255.0;
         var b = @intToFloat(f64, rgb.b) / 255.0;
@@ -165,7 +174,7 @@ pub const HSV = extern struct {
         }
     }
 
-    pub export fn hsv_to_rgb(hsv: *HSV) RGB {
+    pub fn to_rgb(hsv: *HSV) RGB {
         const h = hsv.h;
         const s = hsv.s / 100;
         const v = hsv.v / 100;
@@ -252,7 +261,7 @@ pub const HSL = extern struct {
         return p;
     }
 
-    pub export fn hsl_to_rgb(hsl: *HSL) RGB {
+    pub fn to_rgb(hsl: *HSL) RGB {
         const h = hsl.h / 360.0;
         const s = hsl.s / 100.0;
         const l = hsl.l / 100.0;
@@ -305,7 +314,7 @@ pub const XYZ = extern struct {
         return .{ .x = x, .y = y, .z = z };
     }
 
-    pub export fn xyz_to_lms(xyz: *XYZ) LMS {
+    pub fn to_lms(xyz: *XYZ) LMS {
         return .{
             .l = 0.38971 * xyz.x + 0.68898 * xyz.y - 0.07868 * xyz.z,
             .m = -0.22981 * xyz.x + 1.18340 * xyz.y + 0.04641 * xyz.z,
@@ -313,7 +322,7 @@ pub const XYZ = extern struct {
         };
     }
 
-    pub export fn xyz_to_rgb(xyz: *XYZ) RGB {
+    pub fn to_rgb(xyz: *XYZ) RGB {
         const r = 3.2406 * xyz.x - 1.5372 * xyz.y - 0.4986 * xyz.z;
         const g = -0.9689 * xyz.x + 1.8758 * xyz.y + 0.0415 * xyz.z;
         const b = 0.0557 * xyz.x - 0.2040 * xyz.y + 1.0570 * xyz.z;
@@ -333,7 +342,7 @@ pub const LMS = extern struct {
     m: f64,
     s: f64,
 
-    pub export fn lsm_to_xyz(lms: *LMS) XYZ {
+    pub fn to_xyz(lms: *LMS) XYZ {
         return .{
             .x = 1.94735469 * lms.l - 1.41445123 * lms.m + 0.36476327 * lms.s,
             .y = 0.68990272 * lms.l + 0.34832189 * lms.m + 0.00000000 * lms.s,
@@ -342,7 +351,7 @@ pub const LMS = extern struct {
     }
 
     // https://ixora.io/projects/colorblindness/color-blindness-simulation-research/
-    pub export fn adjust_for_colorblindness(lms: LMS, cb: ColorblindnessFlavor) LMS {
+    pub fn adjust_for_colorblindness(lms: *LMS, cb: ColorblindnessFlavor) LMS {
         return switch (cb) {
             .Protanopia => .{
                 // Missing L cones
@@ -366,6 +375,75 @@ pub const LMS = extern struct {
     }
 };
 
+// {{{
+
+// XXX: No C ABI, huh?
+export fn rgb_to_hsv(rgb: *RGB, out: *HSV) void {
+    const tmp = rgb.to_hsv();
+    out.h = tmp.h;
+    out.s = tmp.s;
+    out.v = tmp.v;
+}
+
+export fn rgb_to_hsl(rgb: *RGB, out: *HSL) void {
+    const tmp = rgb.to_hsl();
+    out.h = tmp.h;
+    out.s = tmp.s;
+    out.l = tmp.l;
+}
+
+export fn rgb_to_xyz(rgb: *RGB, out: *XYZ) void {
+    const tmp = rgb.to_xyz();
+    out.x = tmp.x;
+    out.y = tmp.y;
+    out.z = tmp.z;
+}
+
+export fn hsv_to_rgb(hsv: *HSV, out: *RGB) void {
+    const tmp = hsv.to_rgb();
+    out.r = tmp.r;
+    out.g = tmp.g;
+    out.b = tmp.b;
+}
+
+export fn hsl_to_rgb(hsl: *HSL, out: *RGB) void {
+    const tmp = hsl.to_rgb();
+    out.r = tmp.r;
+    out.g = tmp.g;
+    out.b = tmp.b;
+}
+
+export fn xyz_to_rgb(xyz: *XYZ, out: *RGB) void {
+    const tmp = xyz.to_rgb();
+    out.r = tmp.r;
+    out.g = tmp.g;
+    out.b = tmp.b;
+}
+
+export fn xyz_to_lms(xyz: *XYZ, out: *LMS) void {
+    const tmp = xyz.to_lms();
+    out.l = tmp.l;
+    out.m = tmp.m;
+    out.s = tmp.s;
+}
+
+export fn lms_adjust_for_colorblindness(lms: *LMS, cb: ColorblindnessFlavor, out: *LMS) void {
+    const tmp = lms.adjust_for_colorblindness(cb);
+    out.l = tmp.l;
+    out.m = tmp.m;
+    out.s = tmp.s;
+}
+
+export fn lms_to_xyz(lms: *LMS, out: *XYZ) void {
+    const tmp = lms.to_xyz();
+    out.x = tmp.x;
+    out.y = tmp.y;
+    out.z = tmp.z;
+}
+
+// }}}
+
+// {{{
 test "hsv->rgb" {
     RGB.from_hex(0x1fc8d1).expectNearlyEq(HSV.new(183, 85, 82).hsv_to_rgb());
     RGB.from_hex(0x8c3183).expectNearlyEq(HSV.new(306, 65, 55).hsv_to_rgb());
@@ -425,5 +503,6 @@ test "rgb->xyz->rgb" {
         rgb1.expectNearlyEq(rgb2);
     }
 }
+// }}}
 
 // XXX: test framework stops on first failed test?

@@ -45,33 +45,36 @@ main(int argc, char **argv)
 {
 	struct Options opts = {
 		.display_hex = true,
-		.display_dec = false,
-		.display_hsl = false,
-		.display_hsv = false,
-		.display_xyz = false,
-		.display_lms = false,
-		.display_color = true,
+		.display_color_norm = true,
 	};
 
 	/* parse arguments */
 	ssize_t opt = 0;
-        while ((opt = getopt(argc, argv, "Vhcxdvl")) != -1) {
+        while ((opt = getopt(argc, argv, "Vc:f:")) != -1) {
 		switch (opt) {
-		case 'c': /* disable color */
-			opts.display_color = !opts.display_color;
+		case 'c': /* enable/disable color */
+			if (!strncmp("norm", optarg, 4))
+				opts.display_color_norm = !opts.display_color_norm;
+			if (!strncmp("trit", optarg, 4))
+				opts.display_color_trit = !opts.display_color_trit;
+			if (!strncmp("deut", optarg, 4))
+				opts.display_color_deut = !opts.display_color_deut;
+			if (!strncmp("prot", optarg, 4))
+				opts.display_color_prot = !opts.display_color_prot;
 			break;
-		case 'v': /* enable hsv */
-			opts.display_hsv = !opts.display_hsv;
-			break;
-		case 'l': /* enable hsl */
-			opts.display_hsl = !opts.display_hsl;
-			break;
-		case 'x': /* enable xyz */
-			opts.display_xyz = !opts.display_xyz;
-			break;
-		case 'd': /* enable decimal rgb */
-			opts.display_dec = !opts.display_dec;
-			break;
+		case 'f': /* enable/disable format */
+			if (!strcmp("hex", optarg))
+				opts.display_hex = !opts.display_hex;
+			if (!strcmp("dec", optarg))
+				opts.display_dec = !opts.display_dec;
+			if (!strcmp("hsv", optarg))
+				opts.display_hsv = !opts.display_hsv;
+			if (!strcmp("hsl", optarg))
+				opts.display_hsl = !opts.display_hsl;
+			if (!strcmp("xyz", optarg))
+				opts.display_xyz = !opts.display_xyz;
+			if (!strcmp("lms", optarg))
+				opts.display_lms = !opts.display_lms;
 		case 'V': /* show version */
 			printf("chue v%s\n", VERSION);
 			return 0;

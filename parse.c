@@ -39,10 +39,10 @@ try_parse_hsvhsl(char *token, struct RGB *out) /* hsv(H, S, V) */
 
 	if (hsv) {
 		struct HSV h = { vals[0], vals[1], vals[2] };
-		*out = hsv_to_rgb(&h);
+		hsv_to_rgb(&h, out);
 	} else {
 		struct HSL h = { vals[0], vals[1], vals[2] };
-		*out = hsl_to_rgb(&h);
+		hsl_to_rgb(&h, out);
 	}
 
 	return true;
