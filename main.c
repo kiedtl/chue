@@ -43,28 +43,34 @@ chue(struct Options *opts, char *color)
 int
 main(int argc, char **argv)
 {
-	struct Options opts;
-	opts.display_color  = true;
-	opts.display = HEXRGB;
+	struct Options opts = {
+		.display_hex = true,
+		.display_dec = false,
+		.display_hsl = false,
+		.display_hsv = false,
+		.display_xyz = false,
+		.display_lms = false,
+		.display_color = true,
+	};
 
 	/* parse arguments */
 	ssize_t opt = 0;
         while ((opt = getopt(argc, argv, "Vhcxdvl")) != -1) {
 		switch (opt) {
 		case 'c': /* disable color */
-			opts.display_color = false;
+			opts.display_color = !opts.display_color;
 			break;
 		case 'v': /* enable hsv */
-			opts.display = HSV;
+			opts.display_hsv = !opts.display_hsv;
 			break;
 		case 'l': /* enable hsl */
-			opts.display = HSL;
+			opts.display_hsl = !opts.display_hsl;
 			break;
-		case 'x': /* disable printing colors */
-			opts.display = NONE;
+		case 'x': /* enable xyz */
+			opts.display_xyz = !opts.display_xyz;
 			break;
 		case 'd': /* enable decimal rgb */
-			opts.display = DECRGB;
+			opts.display_dec = !opts.display_dec;
 			break;
 		case 'V': /* show version */
 			printf("chue v%s\n", VERSION);
