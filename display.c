@@ -14,6 +14,23 @@ display(struct RGB *c, struct Options *opts)
 	rgb_to_xyz(c, &xyz);
 	xyz_to_lms(&xyz, &lms);
 
+	struct LMS ladj = {0};
+	struct XYZ xadj = {0};
+
+	if (opts->display_color_trit) {
+		lms_adjust_for_colorblindness(&lms, Tritanopia, &ladj);
+		lms_to_xyz(&ladj, &xadj);
+		xyz_to_rgb(&xadj, c);
+	} else if (opts->display_color_deut) {
+		lms_adjust_for_colorblindness(&lms, Deuteranopia, &ladj);
+		lms_to_xyz(&ladj, &xadj);
+		xyz_to_rgb(&xadj, c);
+	} else if (opts->display_color_prot) {
+		lms_adjust_for_colorblindness(&lms, Protanopia, &ladj);
+		lms_to_xyz(&ladj, &xadj);
+		xyz_to_rgb(&xadj, c);
+	}
+
 	if (opts->display_hex) {
 		printf("#%02x%02x%02x\t", c->r, c->g, c->b);
 	}
@@ -41,6 +58,8 @@ display(struct RGB *c, struct Options *opts)
 	}
 
 	if (opts->display_lms) {
+		rgb_to_xyz(c, &xyz);
+		xyz_to_lms(&xyz, &lms);
 		printf("lms(%.2f,%.2f,%.2f)\t", lms.l, lms.m, lms.s);
 	}
 
@@ -48,17 +67,6 @@ display(struct RGB *c, struct Options *opts)
 		printf("\033[48;2;%i;%i;%im\033[K\033[0m\t", c->r, c->g, c->b);
 	}
 
-	if (opts->display_color_trit) {
-		struct LMS ladj = {0};
-		struct XYZ xadj = {0};
-		struct RGB radj = {0};
-
-		lms_adjust_for_colorblindness(&lms, Tritanopia, &ladj);
-		lms_to_xyz(&ladj, &xadj);
-		xyz_to_rgb(&xadj, &radj);
-
-		printf("\033[48;2;%i;%i;%im\033[K\033[0m\t", radj.r, radj.g, radj.b);
-	}
 
 	printf("\n");
 }

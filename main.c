@@ -75,6 +75,7 @@ main(int argc, char **argv)
 				opts.display_xyz = !opts.display_xyz;
 			if (!strcmp("lms", optarg))
 				opts.display_lms = !opts.display_lms;
+			break;
 		case 'V': /* show version */
 			printf("chue v%s\n", VERSION);
 			return 0;

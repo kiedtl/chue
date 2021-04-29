@@ -23,16 +23,17 @@ comptime {
 }
 
 pub const ColorblindnessFlavor = extern enum {
-    Protanopia, Deuteranopia, Tritanopia
+    Protanopia = 1, Deuteranopia = 2, Tritanopia = 3
 };
 
 // XXX: stahp reformatting my space alignment !!!
+// {{{
 pub const RGB = extern struct {
     r: u8,
     g: u8,
     b: u8,
 
-    pub fn to_hsv(rgb: *RGB) HSV {
+    pub fn to_hsv(rgb: *const RGB) HSV {
         // XXX: guh type inference is a thing
         var hue: f64 = 0.0;
         var saturation: f64 = 0.0;
@@ -69,7 +70,7 @@ pub const RGB = extern struct {
         };
     }
 
-    pub fn to_hsl(rgb: *RGB) HSL {
+    pub fn to_hsl(rgb: *const RGB) HSL {
         var hsl: HSL = HSL{ .h = 0.0, .s = 0.0, .l = 0.0 };
 
         const tr = @intToFloat(f64, rgb.r) / 255.0;
@@ -119,7 +120,7 @@ pub const RGB = extern struct {
         }
     }
 
-    pub fn to_xyz(rgb: *RGB) XYZ {
+    pub fn to_xyz(rgb: *const RGB) XYZ {
         var r = @intToFloat(f64, rgb.r) / 255.0;
         var g = @intToFloat(f64, rgb.g) / 255.0;
         var b = @intToFloat(f64, rgb.b) / 255.0;
@@ -127,10 +128,6 @@ pub const RGB = extern struct {
         r = if (r > 0.04045) math.pow(f64, ((r + 0.055) / 1.055), 2.4) else r / 12.92;
         g = if (g > 0.04045) math.pow(f64, ((g + 0.055) / 1.055), 2.4) else g / 12.92;
         b = if (b > 0.04045) math.pow(f64, ((b + 0.055) / 1.055), 2.4) else b / 12.92;
-
-        r *= 100;
-        g *= 100;
-        b *= 100;
 
         // observer = 2°; illuminant = D65
         return .{
@@ -152,7 +149,10 @@ pub const RGB = extern struct {
         };
     }
 }; // XXX: et tu, zig?
+// }}}
 
+// Hue, Saturation, Value
+// {{{
 pub const HSV = extern struct {
     h: f64,
     s: f64,
@@ -174,7 +174,7 @@ pub const HSV = extern struct {
         }
     }
 
-    pub fn to_rgb(hsv: *HSV) RGB {
+    pub fn to_rgb(hsv: *const HSV) RGB {
         const h = hsv.h;
         const s = hsv.s / 100;
         const v = hsv.v / 100;
@@ -234,7 +234,10 @@ pub const HSV = extern struct {
         };
     }
 };
+// }}}
 
+// Hue, Saturation, Lightness
+/// {{{
 pub const HSL = extern struct {
     h: f64,
     s: f64,
@@ -261,7 +264,7 @@ pub const HSL = extern struct {
         return p;
     }
 
-    pub fn to_rgb(hsl: *HSL) RGB {
+    pub fn to_rgb(hsl: *const HSL) RGB {
         const h = hsl.h / 360.0;
         const s = hsl.s / 100.0;
         const l = hsl.l / 100.0;
@@ -302,9 +305,11 @@ pub const HSL = extern struct {
         }
     }
 };
+// }}}
 
 // CIE 1931 colorspace
 // https://en.wikipedia.org/wiki/CIE_1931_color_space
+// {{{
 pub const XYZ = extern struct {
     x: f64,
     y: f64,
@@ -314,7 +319,7 @@ pub const XYZ = extern struct {
         return .{ .x = x, .y = y, .z = z };
     }
 
-    pub fn to_lms(xyz: *XYZ) LMS {
+    pub fn to_lms(xyz: *const XYZ) LMS {
         return .{
             .l = 0.38971 * xyz.x + 0.68898 * xyz.y - 0.07868 * xyz.z,
             .m = -0.22981 * xyz.x + 1.18340 * xyz.y + 0.04641 * xyz.z,
@@ -322,10 +327,18 @@ pub const XYZ = extern struct {
         };
     }
 
-    pub fn to_rgb(xyz: *XYZ) RGB {
-        const r = 3.2406 * xyz.x - 1.5372 * xyz.y - 0.4986 * xyz.z;
-        const g = -0.9689 * xyz.x + 1.8758 * xyz.y + 0.0415 * xyz.z;
-        const b = 0.0557 * xyz.x - 0.2040 * xyz.y + 1.0570 * xyz.z;
+    fn _adj(f: f64) f64 {
+        // if (math.fabs(f) < 0.0031308) {
+        //     return 12.92 * f;
+        // }
+        // return 1.055 * math.pow(f64, f, 0.41666) - 0.055;
+        return f;
+    }
+
+    pub fn to_rgb(xyz: *const XYZ) RGB {
+        const r = 3.2404542 * xyz.x - 1.5371385 * xyz.y - 0.4985314 * xyz.z;
+        const g = -0.9692660 * xyz.x + 1.8760108 * xyz.y + 0.0415560 * xyz.z;
+        const b = 0.0556434 * xyz.x - 0.2040259 * xyz.y + 1.0572252 * xyz.z;
 
         return .{
             .r = @floatToInt(u8, math.clamp(math.round(r * 255), 0, 255)),
@@ -333,20 +346,29 @@ pub const XYZ = extern struct {
             .b = @floatToInt(u8, math.clamp(math.round(b * 255), 0, 255)),
         };
     }
+
+    pub fn expectNearlyEq(want: XYZ, have: XYZ) void {
+        const diff = .{ .x = want.x - have.x, .y = want.y - have.y, .z = want.z - have.z };
+        if (diff.x >= 1.0 or diff.y >= 1.0 or diff.z >= 1.0) {
+            std.debug.panic("Expect xyz({:.2}, {:.2}, {:.2}), found xyz({:.2}, {:.2}, {:.2})", .{ want.x, want.y, want.z, have.x, have.y, have.z });
+        }
+    }
 };
+// }}}
 
 // LMS (long, medium, short) colorspace
 // https://en.wikipedia.org/wiki/LMS_color_space
+// {{{
 pub const LMS = extern struct {
     l: f64,
     m: f64,
     s: f64,
 
-    pub fn to_xyz(lms: *LMS) XYZ {
+    pub fn to_xyz(lms: *const LMS) XYZ {
         return .{
-            .x = 1.94735469 * lms.l - 1.41445123 * lms.m + 0.36476327 * lms.s,
-            .y = 0.68990272 * lms.l + 0.34832189 * lms.m + 0.00000000 * lms.s,
-            .z = 0.00000000 * lms.l + 0.00000000 * lms.m + 1.93485343 * lms.s,
+            .x = 1.91020 * lms.l - 1.112_120 * lms.m + 0.201_908 * lms.s,
+            .y = 0.37095 * lms.l + 0.629_054 * lms.m + 0.000_000 * lms.s,
+            .z = 0.00000 * lms.l + 0.000_000 * lms.m + 1.000_000 * lms.s,
         };
     }
 
@@ -374,7 +396,9 @@ pub const LMS = extern struct {
         };
     }
 };
+// }}}
 
+// C wrapper functions, works around ABI problems
 // {{{
 
 // XXX: No C ABI, huh?
@@ -443,51 +467,52 @@ export fn lms_to_xyz(lms: *LMS, out: *XYZ) void {
 
 // }}}
 
+// Tests
 // {{{
 test "hsv->rgb" {
-    RGB.from_hex(0x1fc8d1).expectNearlyEq(HSV.new(183, 85, 82).hsv_to_rgb());
-    RGB.from_hex(0x8c3183).expectNearlyEq(HSV.new(306, 65, 55).hsv_to_rgb());
-    RGB.from_hex(0xf2f5a6).expectNearlyEq(HSV.new(62, 32, 96).hsv_to_rgb());
-    RGB.from_hex(0x32a852).expectNearlyEq(HSV.new(136, 70, 66).hsv_to_rgb());
+    RGB.from_hex(0x1fc8d1).expectNearlyEq(HSV.new(183, 85, 82).to_rgb());
+    RGB.from_hex(0x8c3183).expectNearlyEq(HSV.new(306, 65, 55).to_rgb());
+    RGB.from_hex(0xf2f5a6).expectNearlyEq(HSV.new(62, 32, 96).to_rgb());
+    RGB.from_hex(0x32a852).expectNearlyEq(HSV.new(136, 70, 66).to_rgb());
 }
 
 test "rgb->hsv" {
-    HSV.new(183, 85, 82).expectNearlyEq(RGB.from_hex(0x1fc8d1).rgb_to_hsv());
-    HSV.new(306, 65, 55).expectNearlyEq(RGB.from_hex(0x8c3183).rgb_to_hsv());
-    HSV.new(62, 32, 96).expectNearlyEq(RGB.from_hex(0xf2f5a6).rgb_to_hsv());
-    HSV.new(136, 70, 66).expectNearlyEq(RGB.from_hex(0x32a852).rgb_to_hsv());
+    HSV.new(183, 85, 82).expectNearlyEq(RGB.from_hex(0x1fc8d1).to_hsv());
+    HSV.new(306, 65, 55).expectNearlyEq(RGB.from_hex(0x8c3183).to_hsv());
+    HSV.new(62, 32, 96).expectNearlyEq(RGB.from_hex(0xf2f5a6).to_hsv());
+    HSV.new(136, 70, 66).expectNearlyEq(RGB.from_hex(0x32a852).to_hsv());
 }
 
 test "hsl->rgb" {
-    RGB.from_hex(0xe6b3b3).expectNearlyEq(HSL.new(359, 50, 80).hsl_to_rgb());
-    RGB.from_hex(0x1fc8d1).expectNearlyEq(HSL.new(183, 74, 47).hsl_to_rgb());
-    RGB.from_hex(0xffffff).expectNearlyEq(HSL.new(0, 0, 100).hsl_to_rgb());
-    RGB.from_hex(0x8c3183).expectNearlyEq(HSL.new(306, 48, 37).hsl_to_rgb());
-    RGB.from_hex(0xf2f5a6).expectNearlyEq(HSL.new(62, 79, 81).hsl_to_rgb());
-    RGB.from_hex(0x32a852).expectNearlyEq(HSL.new(136, 54, 43).hsl_to_rgb());
+    RGB.from_hex(0xe6b3b3).expectNearlyEq(HSL.new(359, 50, 80).to_rgb());
+    RGB.from_hex(0x1fc8d1).expectNearlyEq(HSL.new(183, 74, 47).to_rgb());
+    RGB.from_hex(0xffffff).expectNearlyEq(HSL.new(0, 0, 100).to_rgb());
+    RGB.from_hex(0x8c3183).expectNearlyEq(HSL.new(306, 48, 37).to_rgb());
+    RGB.from_hex(0xf2f5a6).expectNearlyEq(HSL.new(62, 79, 81).to_rgb());
+    RGB.from_hex(0x32a852).expectNearlyEq(HSL.new(136, 54, 43).to_rgb());
 }
 
 test "rgb->hsl" {
-    HSL.new(0, 50, 80).expectNearlyEq(RGB.from_hex(0xe6b3b3).rgb_to_hsl());
-    HSL.new(183, 74, 47).expectNearlyEq(RGB.from_hex(0x1fc8d1).rgb_to_hsl());
-    HSL.new(0, 0, 100).expectNearlyEq(RGB.from_hex(0xffffff).rgb_to_hsl());
-    HSL.new(306, 48, 37).expectNearlyEq(RGB.from_hex(0x8c3183).rgb_to_hsl());
-    HSL.new(62, 79, 81).expectNearlyEq(RGB.from_hex(0xf2f5a6).rgb_to_hsl());
-    HSL.new(136, 54, 43).expectNearlyEq(RGB.from_hex(0x32a852).rgb_to_hsl());
+    HSL.new(0, 50, 80).expectNearlyEq(RGB.from_hex(0xe6b3b3).to_hsl());
+    HSL.new(183, 74, 47).expectNearlyEq(RGB.from_hex(0x1fc8d1).to_hsl());
+    HSL.new(0, 0, 100).expectNearlyEq(RGB.from_hex(0xffffff).to_hsl());
+    HSL.new(306, 48, 37).expectNearlyEq(RGB.from_hex(0x8c3183).to_hsl());
+    HSL.new(62, 79, 81).expectNearlyEq(RGB.from_hex(0xf2f5a6).to_hsl());
+    HSL.new(136, 54, 43).expectNearlyEq(RGB.from_hex(0x32a852).to_hsl());
 }
 
 test "xyz->rgb" {
-    RGB.from_hex(0xffffff).expectNearlyEq(XYZ.new(0.9505, 1.0000, 1.08900).xyz_to_rgb());
-    RGB.from_hex(0xff0000).expectNearlyEq(XYZ.new(0.4123, 0.2126, 0.01933).xyz_to_rgb());
+    RGB.from_hex(0xffffff).expectNearlyEq(XYZ.new(0.9505, 1.0000, 1.08900).to_rgb());
+    RGB.from_hex(0xff0000).expectNearlyEq(XYZ.new(0.4123, 0.2126, 0.01933).to_rgb());
 }
 
 test "rgb->hsl->rgb" {
     var hue: usize = 359;
     while (hue > 0) : (hue -= 1) {
         const hsl1 = HSL.new(@intToFloat(f64, hue), 50, 80);
-        const rgb1 = hsl1.hsl_to_rgb();
-        const hsl2 = rgb1.rgb_to_hsl();
-        const rgb2 = hsl2.hsl_to_rgb();
+        const rgb1 = hsl1.to_rgb();
+        const hsl2 = rgb1.to_hsl();
+        const rgb2 = hsl2.to_rgb();
         rgb1.expectNearlyEq(rgb2);
     }
 }
@@ -497,9 +522,24 @@ test "rgb->xyz->rgb" {
     while (hue > 0) : (hue -= 1) {
         const hsl = HSL.new(@intToFloat(f64, hue), 50, 80);
 
-        const rgb1 = hsl.hsl_to_rgb();
-        const xyz = rgb1.rgb_to_xyz();
-        const rgb2 = xyz.xyz_to_rgb();
+        const rgb1 = hsl.to_rgb();
+        const xyz = rgb1.to_xyz();
+        const rgb2 = xyz.to_rgb();
+        rgb1.expectNearlyEq(rgb2);
+    }
+}
+
+test "rgb->xyz->lms->xyz->rgb" {
+    var hue: usize = 359;
+    while (hue > 0) : (hue -= 1) {
+        const hsl = HSL.new(@intToFloat(f64, hue), 50, 80);
+
+        const rgb1 = hsl.to_rgb();
+        const xyz1 = rgb1.to_xyz();
+        const lms = xyz1.to_lms();
+        const xyz2 = lms.to_xyz();
+        const rgb2 = xyz2.to_rgb();
+        xyz1.expectNearlyEq(xyz2);
         rgb1.expectNearlyEq(rgb2);
     }
 }

@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 enum ColorblindnessFlavor {
-    Protanopia, Deuteranopia, Tritanopia
+    Protanopia = 1, Deuteranopia = 2, Tritanopia = 3
 };
 
 struct RGB { uint8_t r, g, b; };
